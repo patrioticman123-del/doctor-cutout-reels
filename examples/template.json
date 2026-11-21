@@ -1,0 +1,25 @@
+{
+  "title": "醫師剪紙劇場・通用讀劇範本",
+  "topic": "通用範本，尚未指定復健科或骨科主題",
+  "content_type": "template",
+  "brand": "醫師剪紙劇場",
+  "names": {"doctor":"醫師","alo":"阿洛","mei":"美芳","narrator":"旁白"},
+  "footer": "分鏡範本 · 醫療主題待輸入",
+  "voices": {
+    "doctor": {"edge":"zh-TW-YunJheNeural","sapi":"Microsoft Zhiwei"},
+    "alo": {"edge":"zh-TW-HsiaoChenNeural","sapi":"Microsoft Hanhan Desktop"},
+    "mei": {"edge":"zh-TW-HsiaoYuNeural","sapi":"Microsoft Yating"},
+    "narrator": {"edge":"zh-TW-HsiaoChenNeural","sapi":"Microsoft Hanhan Desktop"}
+  },
+  "sources": [],
+  "scenes": [
+    {"speaker":"alo","cast":["doctor","alo"],"text":"醫師！今天的健康課講什麼？我已經準備亂猜了！","headline":"先猜，再找答案？","beat":"hook","shot":"alo","setting":"classroom","motion":"nod","hold":0.4,"action":"教室黑板前，阿洛點頭搶話，醫師在旁聽。","reaction":"醫師維持冷面，等阿洛說完。","claims":[]},
+    {"speaker":"doctor","cast":["doctor","alo"],"text":"先給我一個主題。我們查完資料，再開始演。","headline":"先有主題，才有故事","beat":"turn","shot":"doctor","setting":"classroom","motion":"still","hold":0.4,"action":"醫師平靜回應，維持固定尺度雙人構圖。","reaction":"阿洛停止搶話，留一個短停頓。","claims":[]},
+    {"speaker":"mei","cast":["doctor","mei"],"text":"那骨科、復健科，每一集都用同一個答案，行不行？","headline":"每集都同一個答案？","beat":"escalate","shot":"mei","setting":"schoolyard","motion":"nod","hold":0.4,"action":"校門前，美芳接話；醫師留在同框。","reaction":"問題升級，等待醫師回答。","claims":[]},
+    {"speaker":"doctor","cast":["doctor","mei"],"text":"場景可以一樣，資料、情境和笑點，每次都要重寫。","headline":"換主題，就重寫故事","beat":"explain","shot":"doctor","setting":"schoolyard","motion":"shake","hold":0.4,"action":"醫師輕微搖頭，人物尺度保持不變。","reaction":"美芳同尺度站在醫師旁邊，聽完再接話。","claims":[]},
+    {"speaker":"alo","cast":["doctor","alo"],"text":"懂了！我的工作，就是先把大家的問題問歪一點！","headline":"阿洛負責把問題問歪","beat":"character","shot":"alo","setting":"street","motion":"nod","hold":0.5,"action":"街道對切阿洛，他很有自信地點頭。","reaction":"醫師冷面旁聽，不幫錯誤推論背書。","claims":[]},
+    {"speaker":"mei","cast":["doctor","mei"],"text":"我的工作，是替觀眾再問清楚。不能只有醫師一直講。","headline":"美芳替觀眾追問","beat":"dialogue","shot":"mei","setting":"street","motion":"nod","hold":0.4,"action":"同一街區切到美芳，呈現角色互相接話。","reaction":"醫師等待她說完，保留對話感。","claims":[]},
+    {"speaker":"doctor","cast":["doctor","mei","alo"],"text":"先看腳本和分鏡。你改完、確認，我們才配音開拍。","headline":"腳本分鏡先審，再開拍","beat":"workflow","shot":"wide","setting":"classroom","motion":"still","hold":0.6,"action":"回到教室，三人同框，醫師交代製作順序。","reaction":"阿洛與美芳暫停接話，留閱讀時間。","claims":[]},
+    {"speaker":"alo","cast":["doctor","alo"],"text":"所以今天，只是讀劇？好，我先把我的演技存檔。","headline":"今天先讀劇，不偷開拍","beat":"punch","shot":"punch","setting":"classroom","motion":"still","hold":1.0,"action":"同尺度雙人構圖，阿洛說完後維持靜止冷場。","reaction":"醫師在旁冷面旁聽，畫面停住，等待使用者修改分鏡。","claims":[]}
+  ]
+}

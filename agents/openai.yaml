@@ -1,0 +1,4 @@
+interface:
+  display_name: "醫師剪紙短劇"
+  short_description: "復健科骨科校園剪紙對話短劇，先審腳本分鏡，再產出三十至六十秒的有聲影片"
+  default_prompt: "使用 $doctor-cutout-reels，依我提供的復健科或骨科主題先製作腳本與分鏡，等我修改確認後才生成有聲影片。"

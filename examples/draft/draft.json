@@ -1,0 +1,189 @@
+{
+  "status": "awaiting_user_review",
+  "revision": "03dce0acb85c7a69",
+  "estimated_duration": 47.16790697674419,
+  "target_duration": [
+    30,
+    60
+  ],
+  "sources": [],
+  "timeline": [
+    {
+      "speaker": "alo",
+      "cast": [
+        "doctor",
+        "alo"
+      ],
+      "text": "醫師！今天的健康課講什麼？我已經準備亂猜了！",
+      "headline": "先猜，再找答案？",
+      "beat": "hook",
+      "shot": "alo",
+      "setting": "classroom",
+      "motion": "nod",
+      "hold": 0.4,
+      "action": "教室黑板前，阿洛點頭搶話，醫師在旁聽。",
+      "reaction": "醫師維持冷面，等阿洛說完。",
+      "claims": [],
+      "index": 0,
+      "start": 0,
+      "end": 5.696279069767442,
+      "voice_start": 0.18,
+      "voice_end": 5.296279069767442
+    },
+    {
+      "speaker": "doctor",
+      "cast": [
+        "doctor",
+        "alo"
+      ],
+      "text": "先給我一個主題。我們查完資料，再開始演。",
+      "headline": "先有主題，才有故事",
+      "beat": "turn",
+      "shot": "doctor",
+      "setting": "classroom",
+      "motion": "still",
+      "hold": 0.4,
+      "action": "醫師平靜回應，維持固定尺度雙人構圖。",
+      "reaction": "阿洛停止搶話，留一個短停頓。",
+      "claims": [],
+      "index": 1,
+      "start": 5.696279069767442,
+      "end": 10.927441860465118,
+      "voice_start": 5.876279069767442,
+      "voice_end": 10.527441860465117
+    },
+    {
+      "speaker": "mei",
+      "cast": [
+        "doctor",
+        "mei"
+      ],
+      "text": "那骨科、復健科，每一集都用同一個答案，行不行？",
+      "headline": "每集都同一個答案？",
+      "beat": "escalate",
+      "shot": "mei",
+      "setting": "schoolyard",
+      "motion": "nod",
+      "hold": 0.4,
+      "action": "校門前，美芳接話；醫師留在同框。",
+      "reaction": "問題升級，等待醫師回答。",
+      "claims": [],
+      "index": 2,
+      "start": 10.927441860465118,
+      "end": 16.856279069767442,
+      "voice_start": 11.107441860465118,
+      "voice_end": 16.456279069767444
+    },
+    {
+      "speaker": "doctor",
+      "cast": [
+        "doctor",
+        "mei"
+      ],
+      "text": "場景可以一樣，資料、情境和笑點，每次都要重寫。",
+      "headline": "換主題，就重寫故事",
+      "beat": "explain",
+      "shot": "doctor",
+      "setting": "schoolyard",
+      "motion": "shake",
+      "hold": 0.4,
+      "action": "醫師輕微搖頭，人物尺度保持不變。",
+      "reaction": "美芳同尺度站在醫師旁邊，聽完再接話。",
+      "claims": [],
+      "index": 3,
+      "start": 16.856279069767442,
+      "end": 22.78511627906977,
+      "voice_start": 17.036279069767442,
+      "voice_end": 22.38511627906977
+    },
+    {
+      "speaker": "alo",
+      "cast": [
+        "doctor",
+        "alo"
+      ],
+      "text": "懂了！我的工作，就是先把大家的問題問歪一點！",
+      "headline": "阿洛負責把問題問歪",
+      "beat": "character",
+      "shot": "alo",
+      "setting": "street",
+      "motion": "nod",
+      "hold": 0.5,
+      "action": "街道對切阿洛，他很有自信地點頭。",
+      "reaction": "醫師冷面旁聽，不幫錯誤推論背書。",
+      "claims": [],
+      "index": 4,
+      "start": 22.78511627906977,
+      "end": 28.581395348837212,
+      "voice_start": 22.96511627906977,
+      "voice_end": 28.081395348837212
+    },
+    {
+      "speaker": "mei",
+      "cast": [
+        "doctor",
+        "mei"
+      ],
+      "text": "我的工作，是替觀眾再問清楚。不能只有醫師一直講。",
+      "headline": "美芳替觀眾追問",
+      "beat": "dialogue",
+      "shot": "mei",
+      "setting": "street",
+      "motion": "nod",
+      "hold": 0.4,
+      "action": "同一街區切到美芳，呈現角色互相接話。",
+      "reaction": "醫師等待她說完，保留對話感。",
+      "claims": [],
+      "index": 5,
+      "start": 28.581395348837212,
+      "end": 34.74279069767442,
+      "voice_start": 28.761395348837212,
+      "voice_end": 34.342790697674424
+    },
+    {
+      "speaker": "doctor",
+      "cast": [
+        "doctor",
+        "mei",
+        "alo"
+      ],
+      "text": "先看腳本和分鏡。你改完、確認，我們才配音開拍。",
+      "headline": "腳本分鏡先審，再開拍",
+      "beat": "workflow",
+      "shot": "wide",
+      "setting": "classroom",
+      "motion": "still",
+      "hold": 0.6,
+      "action": "回到教室，三人同框，醫師交代製作順序。",
+      "reaction": "阿洛與美芳暫停接話，留閱讀時間。",
+      "claims": [],
+      "index": 6,
+      "start": 34.74279069767442,
+      "end": 40.87162790697675,
+      "voice_start": 34.92279069767442,
+      "voice_end": 40.27162790697675
+    },
+    {
+      "speaker": "alo",
+      "cast": [
+        "doctor",
+        "alo"
+      ],
+      "text": "所以今天，只是讀劇？好，我先把我的演技存檔。",
+      "headline": "今天先讀劇，不偷開拍",
+      "beat": "punch",
+      "shot": "punch",
+      "setting": "classroom",
+      "motion": "still",
+      "hold": 1.0,
+      "action": "同尺度雙人構圖，阿洛說完後維持靜止冷場。",
+      "reaction": "醫師在旁冷面旁聽，畫面停住，等待使用者修改分鏡。",
+      "claims": [],
+      "index": 7,
+      "start": 40.87162790697675,
+      "end": 47.16790697674419,
+      "voice_start": 41.05162790697675,
+      "voice_end": 46.16790697674419
+    }
+  ]
+}
