@@ -14,9 +14,18 @@ from PIL import Image, ImageDraw
 import imageio_ffmpeg
 
 from audio import assemble
-from visuals import Stage, chunks, find_font, fit, TEACHING_LABELS
+from visuals import Stage, chunks, find_font, fit, TEACHING_LABELS, GESTURE_LABELS, resolved_gesture
 
 ROOT = Path(__file__).resolve().parents[1]
+ASPECT_RATIO = "9:16"
+
+
+def video_size(width=1080):
+    if isinstance(width,bool) or not isinstance(width,int) or not 180<=width<=2160 or width%18:
+        raise ValueError("9:16 width must be a multiple of 18 between 180 and 2160")
+    return width,width*16//9
+
+
 DEFAULT_VOICES = {
     "doctor": {"edge": "zh-TW-YunJheNeural", "sapi": "Microsoft Zhiwei"},
     "alo": {"edge": "zh-TW-HsiaoChenNeural", "sapi": "Microsoft Hanhan Desktop"},
@@ -27,6 +36,15 @@ DEFAULT_VOICES = {
 def validate(data):
     if not isinstance(data, dict):
         raise ValueError("Episode must be an object")
+    data.setdefault("aspect_ratio",ASPECT_RATIO)
+    if data["aspect_ratio"]!=ASPECT_RATIO:
+        raise ValueError("This skill outputs phone portrait 9:16 only; aspect_ratio must be 9:16")
+    data.setdefault("layout","full_scene")
+    if data["layout"]!="full_scene":
+        raise ValueError("Use full_scene: the set fills the entire 9:16 frame, without title/caption bands")
+    data.setdefault("show_subtitles",True)
+    if not isinstance(data["show_subtitles"],bool):
+        raise ValueError("show_subtitles must be true or false")
     for field in ("title", "topic"):
         if not isinstance(data.get(field), str) or not data[field].strip():
             raise ValueError(f"Missing {field}")
@@ -90,6 +108,9 @@ def validate(data):
         scene.setdefault("motion","nod")
         if scene["motion"] not in ("nod","shake","still"):
             raise ValueError(f"Scene {i+1}: motion must be nod, shake or still")
+        scene.setdefault("gesture","auto")
+        if scene["gesture"] not in ("auto","rest","talk","point","present","question","wave"):
+            raise ValueError(f"Scene {i+1}: invalid hand gesture")
         lesson=scene.setdefault("teaching",{"mode":"dialogue"})
         if not isinstance(lesson,dict) or lesson.get("mode") not in TEACHING_LABELS:
             raise ValueError(f"Scene {i+1}: invalid teaching mode")
@@ -143,13 +164,14 @@ def draft(episode,out,font_path):
     cursor=0
     rows=[f"# {episode['title']}\n",f"分鏡版本：`{rev}`\n",
           "狀態：待使用者審閱。尚未生成配音、配樂或影片。\n",
-          "秒數為讀劇估計；核准後依實際配音調整為 30–60 秒。\n"]
+          "手機滿版場景 9:16 · 1080×1920；不設上下標題區，對話字幕直接疊於場景。秒數為讀劇估計，核准後依實際配音調整為 30–60 秒。\n",
+          "分鏡顯示說話姿勢代表幀，尚未合成聲音或影片。總覽是多張直式分鏡拼在一起，不是影片畫面比例。\n"]
     cards=[]
     for i,scene in enumerate(episode["scenes"]):
         length=max(2.0,len(scene["text"])/4.3)
         end=cursor+.18+length+scene["hold"]
         item=dict(scene,index=i,start=cursor,end=end,voice_start=cursor+.18,
-                  voice_end=cursor+.18+length,envelope=[0.0]*math.ceil(length*24))
+                  voice_end=cursor+.18+length,envelope=[0.0]*math.ceil(length*24),draft_pose=True)
         frame=stage.frame(item,(cursor+end)/2,24)
         image_name=f"frames/{i+1:02}.jpg"
         frame.save(out/image_name,quality=91)
@@ -168,6 +190,7 @@ def draft(episode,out,font_path):
                  f"**{name}：** {scene['text']}\n",f"動作：{scene['action']}\n",
                  f"接話／反應：{scene['reaction']}\n",f"字卡：{scene['headline']}\n",
                  f"演法：{TEACHING_LABELS[scene['teaching']['mode']]}\n",
+                 f"手部：{GESTURE_LABELS[resolved_gesture(scene)]}；配音後依音量切換嘴型。\n",
                  f"來源：{', '.join(scene['claims']) or '純劇情／範本，不含臨床說法'}\n"]
         esc=html.escape
         teaching_label=TEACHING_LABELS[scene["teaching"]["mode"]]
@@ -186,10 +209,11 @@ def draft(episode,out,font_path):
     rows += ["## 修改與確認\n","請以幕號回覆修改；修改後會重新交付腳本與分鏡。確認此版本後，才進入配音配樂及影片階段。\n"]
     (out/"script.md").write_text("\n".join(rows),encoding="utf-8")
     manifest={"status":"awaiting_user_review","revision":rev,"estimated_duration":cursor,
-              "target_duration":[30,60],"sources":episode["sources"],"timeline":timeline}
+              "target_duration":[30,60],"aspect_ratio":ASPECT_RATIO,"layout":"full_scene","width":1080,"height":1920,
+              "sources":episode["sources"],"timeline":timeline}
     (out/"draft.json").write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding="utf-8")
     (out/"episode.json").write_text(json.dumps(episode,ensure_ascii=False,indent=2),encoding="utf-8")
-    page=f'''<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(episode['title'])}・分鏡審稿</title><style>body{{background:#fff9ed;color:#202332;font:17px system-ui;max-width:1100px;margin:40px auto;padding:0 20px}}article{{display:grid;grid-template-columns:230px 1fr;gap:28px;border-top:3px solid #202332;padding:25px 0}}img{{width:100%}}h1{{font-size:30px}}small{{color:#666}}p{{line-height:1.7}}.status{{padding:18px;background:#f8c854}}a{{color:#315d57}}@media(max-width:600px){{article{{grid-template-columns:1fr}}img{{max-width:270px}}}}</style><h1>{html.escape(episode['title'])}</h1><p class="status">待審稿 · 版本 {rev} · 約 {cursor:.1f} 秒（估）<br>尚未生成配音、配樂或影片。請先修改或確認腳本與分鏡。</p><p><a href="script.md">完整腳本</a> · <a href="storyboard.jpg">分鏡總覽</a> · <a href="episode.json">劇本資料</a></p>{''.join(cards)}</html>'''
+    page=f'''<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(episode['title'])}・分鏡審稿</title><style>body{{background:#fff9ed;color:#202332;font:17px system-ui;max-width:1100px;margin:40px auto;padding:0 20px}}article{{display:grid;grid-template-columns:230px 1fr;gap:28px;border-top:3px solid #202332;padding:25px 0}}img{{width:100%;aspect-ratio:9/16;object-fit:contain}}h1{{font-size:30px}}small{{color:#666}}p{{line-height:1.7}}.status{{padding:18px;background:#f8c854}}a{{color:#315d57}}@media(max-width:600px){{article{{grid-template-columns:1fr}}img{{max-width:270px}}}}</style><h1>{html.escape(episode['title'])}</h1><p class="status">待審稿 · 手機滿版場景 9:16 · 版本 {rev} · 約 {cursor:.1f} 秒（估）<br>尚未生成配音、配樂或影片。請先修改或確認腳本與分鏡。</p><p><a href="script.md">完整腳本</a> · <a href="storyboard.jpg">分鏡總覽</a> · <a href="episode.json">劇本資料</a></p>{''.join(cards)}</html>'''
     (out/"storyboard.html").write_text(page,encoding="utf-8")
     print(f"DRAFT: {out/'storyboard.html'} | revision {rev} | estimated {cursor:.1f}s",flush=True)
     return manifest
@@ -217,6 +241,7 @@ def subtitles(timeline):
 
 
 def render(episode, source_dir, out, backend, width, fps, font_path):
+    width,height=video_size(width)
     ffmpeg=imageio_ffmpeg.get_ffmpeg_exe()
     out.mkdir(parents=True,exist_ok=True)
     stage=Stage(ROOT/"assets",episode,font_path)
@@ -225,12 +250,12 @@ def render(episode, source_dir, out, backend, width, fps, font_path):
     if not 30 <= duration <= 60:
         raise ValueError(f"Measured duration is {duration:.2f}s; required 30–60s. "
                          "Rewrite dialogue/holds, then rerun. Cached speech is retained.")
-    height=width*16//9
     temp=out/"episode.rendering.mp4"
     log_path=out/"ffmpeg.log"
     command=[ffmpeg,"-y","-v","warning","-f","rawvideo","-pix_fmt","rgb24",
              "-s",f"{width}x{height}","-r",str(fps),"-i","pipe:0",
              "-i",str(out/"mix.wav"),"-map","0:v:0","-map","1:a:0",
+             "-vf","setsar=1","-metadata:s:v:0","rotate=0",
              "-c:v","libx264","-preset","fast","-crf","19","-pix_fmt","yuv420p",
              "-c:a","aac","-b:a","160k","-ar","48000",
              "-movflags","+faststart","-t",f"{duration:.6f}",str(temp)]
@@ -269,7 +294,8 @@ def render(episode, source_dir, out, backend, width, fps, font_path):
     sheet.save(out/"render-storyboard.jpg",quality=93)
     (out/"episode.srt").write_text(subtitles(timeline),encoding="utf-8-sig")
     manifest={"title":episode["title"],"topic":episode["topic"],"content_type":episode["content_type"],
-              "duration":duration,"width":width,"height":height,"fps":fps,"speech_backend":backend,
+              "duration":duration,"aspect_ratio":ASPECT_RATIO,"layout":"full_scene","sample_aspect_ratio":"1:1",
+              "width":width,"height":height,"fps":fps,"speech_backend":backend,
               "voices":episode["voices"],"sources":episode["sources"],
               "timing":"measured PCM speech; proportional subtitle chunks; amplitude mouth animation",
               "timeline":[{k:v for k,v in s.items() if k!="envelope"} for s in timeline],
@@ -279,8 +305,8 @@ def render(episode, source_dir, out, backend, width, fps, font_path):
     title=html.escape(episode["title"])
     (out/"preview.html").write_text(f'''<!doctype html>
 <html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{title}</title><style>body{{background:#202332;color:#fff9ed;font:16px system-ui;margin:24px auto;max-width:700px;padding:0 20px}}video{{height:min(75vh,900px);max-width:100%;display:block;margin:auto;border-radius:12px}}a{{color:#f8c854}}h1{{font-size:24px}}.links{{display:flex;gap:20px;flex-wrap:wrap;margin:24px 0}}</style>
-<h1>{title}</h1><p>{duration:.1f} 秒 · {width}×{height} · 合成角色配音 / 原創程序配樂</p>
+<title>{title}</title><style>body{{background:#202332;color:#fff9ed;font:16px system-ui;margin:24px auto;max-width:700px;padding:0 20px}}video{{width:min(100%,405px);height:auto;aspect-ratio:9/16;object-fit:contain;background:#000;display:block;margin:auto;border-radius:12px}}a{{color:#f8c854}}h1{{font-size:24px}}.links{{display:flex;gap:20px;flex-wrap:wrap;margin:24px 0}}</style>
+<h1>{title}</h1><p>{duration:.1f} 秒 · 手機直式 9:16 · {width}×{height} · 合成角色配音 / 原創程序配樂</p>
 <video controls playsinline preload="metadata" src="episode.mp4"></video>
 <div class="links"><a href="episode.mp4" download>下載 MP4</a><a href="episode.srt" download>下載字幕</a><a href="render-storyboard.jpg">查看成片抽幀</a><a href="manifest.json">來源與時間軸</a></div>
 <p>需與同資料夾的影片檔一起使用。音樂、人聲及字幕已輸出到影片。</p></html>''',encoding="utf-8")
@@ -295,14 +321,14 @@ def main():
     parser.add_argument("--voice",choices=("sapi","edge","files"),default="sapi" if sys.platform=="win32" else "edge")
     parser.add_argument("--width",type=int,default=1080)
     parser.add_argument("--fps",type=int,default=24)
+    parser.add_argument("--aspect-ratio",choices=(ASPECT_RATIO,),default=ASPECT_RATIO)
     parser.add_argument("--font")
     parser.add_argument("--check",action="store_true")
     parser.add_argument("--render",action="store_true",help="Render only after user approval of this revision")
     parser.add_argument("--approved-hash",help="Revision explicitly approved by user; must match draft.json and current assets")
     args=parser.parse_args()
     try:
-        if args.width < 180 or args.width > 2160 or args.width % 18:
-            raise ValueError("Width must be a multiple of 18 between 180 and 2160")
+        video_size(args.width)
         if not 1 <= args.fps <= 60:
             raise ValueError("fps must be 1–60")
         data=validate(json.loads(args.episode.read_text(encoding="utf-8-sig")))
@@ -310,12 +336,12 @@ def main():
         for scene in data["scenes"]:
             fit(scene["headline"],face,81,950,2)
             if scene["teaching"]["mode"]!="dialogue":
-                fit(scene["teaching"]["title"],face,40,365,2)
+                fit(scene["teaching"]["title"],face,52,570,2)
                 for point in scene["teaching"]["points"]:
                     if scene["teaching"]["mode"]=="comparison":
-                        fit(point,face,36,155,3)
+                        fit(point,face,46,250,3)
                     else:
-                        fit("A "+point,face,36,365,2)
+                        fit("A "+point,face,44,570,2)
             for part in chunks(scene["text"]):
                 fit(part,face,66,944,2)
         if args.check:

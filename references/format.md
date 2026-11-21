@@ -5,10 +5,13 @@
 | 欄位 | 意義 |
 |---|---|
 | `title`, `topic` | 不可空白 |
+| `aspect_ratio` | 固定 `9:16`，省略時自動填入；其他比例會拒絕 |
+| `layout` | 固定 `full_scene`：場景鋪滿整個畫面，沒有上下文字區 |
+| `show_subtitles` | 布林值，預設 true；字幕疊在場景內，可設 false 關閉 |
 | `content_type` | `medical` 或 `template`，醫療片必須有來源與 claims |
-| `brand` | 畫面標識，最多 14 字，不杜撰診所名 |
+| `brand` | 審稿資料，最多 14 字，不杜撰診所名；不另畫頂部品牌條 |
 | `names` | doctor/alo/mei/narrator 的顯示名稱，各最多 8 字 |
-| `footer` | 底部短句，最多 28 字 |
+| `footer` | 保留資料，最多 28 字；不另畫底部白色文字區 |
 | `voices` | doctor/alo/mei/narrator 各含 edge 與 sapi 聲音名稱 |
 | `sources` | id/title/url/accessed（YYYY-MM-DD）/supports |
 | `scenes` | 2–14 幕，30–60 秒通常用 7–12 幕 |
@@ -17,10 +20,11 @@
 
 - `speaker`：doctor / alo / mei / narrator。至少 75% 幕是人物對話。
 - `cast`：同框角色 ID 陣列，2–3 人，限 doctor/alo/mei；發言者必須出鏡。學生不等同成人患者。
-- `text`：完整配音；`headline`：字卡最多 26 字；`beat`：故事功能。
+- `text`：完整配音；`headline`：審稿標題最多 26 字，顯示於分鏡網頁而不燒在影片頂部；`beat`：故事功能。
 - `setting`：classroom 教室／schoolyard 小學校園／street 街道。
 - `shot`：wide / doctor / alo / mei / punch，記錄對話焦點。**現成引擎鎖定人物尺寸與腳底基準，不因 shot 放大發言者或縮小聽者。** 全身畫面固定尺度，對話焦點以標示、嘴型和小動作表達。
 - `motion`：nod 上下點頭／shake 左右搖頭／still 靜止；`hold`：句後停頓 0.1–2 秒。
+- `gesture`：auto（依角色與教具選擇）／rest／talk 擺手／point 指黑板／present 攤手／question 舉手提問／wave 揮手。以原角色袖子與手掌分層、肩關節旋轉，朝同框內側動作，保留身體尺度與原來服裝；配音期間手臂循環變換，停頓後放鬆，講解指示棒跟隨手掌。靜態分鏡會顯示代表姿勢；不因看到張嘴就代表已生成配音。
 - `action`、`reaction`：供審稿的表演與接話說明，必填。只描述引擎支援的動作；更複雜動作先擴充並重新審稿。
 - `claims`：來源 ID 陣列。純劇情可空；醫療說法須對應來源。
 - `audio`：選填，以本 JSON 所在目錄為基準的錄音路徑，files 模式每幕必填。
@@ -45,6 +49,8 @@ python scripts/render.py episode.json --out build/my-episode --render --approved
 確認碼來自 episode JSON、角色資產和引擎檔案雜湊。任何相關修改都會使舊版失效；旗標是版本檢查，AI 不能自行當作使用者確認。只改文字腳本時務必同步 JSON，重新生成草稿。未收到明確確認前停在分鏡階段。
 
 `--check` 只檢查資料與排字。`--width 540 --fps 12` 可在確認後輸出低解析度影片草稿；預設 1080/24。寬須為 18 的倍數。`--font /path/to/NotoSansCJK-Regular.ttc` 指定本機中文字體，無可用中文字體就報錯。
+
+影片與每張分鏡是滿版直式場景，預設 1080×1920；低解析度 540×960、720×1280 也維持 9:16。`--aspect-ratio` 只接受 9:16，影片明確設定方形像素 SAR 1:1、無旋轉。審稿總覽只是多張直式分鏡的拼圖；不得把它當作影片。上、下緣都繼續畫場景；可選的對話字幕是畫內透明底疊字，沒有白底標題帶。播放器使用 9:16 比例，不拉伸影像。
 
 ## 聲音後端
 

@@ -45,7 +45,8 @@
       "hold": 0.4,
       "action": "教室黑板前，阿洛點頭搶話，醫師在旁聽。",
       "reaction": "醫師維持冷面，等阿洛說完。",
-      "claims": []
+      "claims": [],
+      "gesture": "question"
     },
     {
       "speaker": "doctor",
@@ -71,7 +72,8 @@
           "再整理故事關係",
           "讓角色接話"
         ]
-      }
+      },
+      "gesture": "point"
     },
     {
       "speaker": "mei",
@@ -88,7 +90,8 @@
       "hold": 0.4,
       "action": "校園中美芳提出教具建議，醫師聽完帶回教室示範。",
       "reaction": "不把每一集固定成有人說錯、醫師糾正。",
-      "claims": []
+      "claims": [],
+      "gesture": "talk"
     },
     {
       "speaker": "doctor",
@@ -112,7 +115,8 @@
         "points": [
           "骨頭模型：通用示意"
         ]
-      }
+      },
+      "gesture": "present"
     },
     {
       "speaker": "alo",
@@ -129,7 +133,8 @@
       "hold": 0.5,
       "action": "街道中阿洛追問，醫師保持同尺度冷面聽完。",
       "reaction": "從教具示範轉成生活情境，用接話推進笑點。",
-      "claims": []
+      "claims": [],
+      "gesture": "question"
     },
     {
       "speaker": "mei",
@@ -154,7 +159,8 @@
           "黑板整理關係",
           "模型引出觀察"
         ]
-      }
+      },
+      "gesture": "present"
     },
     {
       "speaker": "doctor",
@@ -179,7 +185,8 @@
           "先看腳本分鏡",
           "直接開拍"
         ]
-      }
+      },
+      "gesture": "point"
     },
     {
       "speaker": "alo",
@@ -194,9 +201,13 @@
       "setting": "classroom",
       "motion": "still",
       "hold": 1.0,
-      "action": "回到同尺度雙人對話，阿洛說完靜止冷場。",
+      "action": "滿版教室雙人同框；阿洛說話時揮手，結束後收手留白。",
       "reaction": "醫師在旁聽，停在分鏡審稿階段，等待使用者修改。",
-      "claims": []
+      "claims": [],
+      "gesture": "wave"
     }
-  ]
+  ],
+  "aspect_ratio": "9:16",
+  "layout": "full_scene",
+  "show_subtitles": true
 }

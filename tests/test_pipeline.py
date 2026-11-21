@@ -87,8 +87,8 @@ class PipelineTests(unittest.TestCase):
         stage=Stage(ROOT/"assets",data,find_font())
         seen=[]
         original=stage.character_sprite
-        def capture(name,height,mouth,blink):
-            sprite=original(name,height,mouth,blink)
+        def capture(name,height,mouth,blink,**pose):
+            sprite=original(name,height,mouth,blink,**pose)
             seen.append((name,sprite.size))
             return sprite
         stage.character_sprite=capture
@@ -97,7 +97,56 @@ class PipelineTests(unittest.TestCase):
             item=dict(scene,index=i,start=0,end=5,voice_start=.18,voice_end=4.5,envelope=[0]*120)
             frame=stage.frame(item,2,24)
             self.assertEqual(frame.size,(1080,1920))
-        self.assertEqual({size for _,size in seen},{(520,780)})
+        self.assertEqual({size[1] for _,size in seen},{900})
+        self.assertEqual(len({size for _,size in seen}),1)
+
+    def test_phone_portrait_sizes_and_landscape_rejection(self):
+        self.assertEqual(render.video_size(),(1080,1920))
+        for width in (180,540,720,1080,2160):
+            w,h=render.video_size(width)
+            self.assertEqual(w*16,h*9)
+            self.assertLess(w,h)
+        data=copy.deepcopy(self.episode)
+        data["aspect_ratio"]="16:9"
+        with self.assertRaises(ValueError):
+            render.validate(data)
+        data=copy.deepcopy(self.episode)
+        data["layout"]="cards"
+        with self.assertRaises(ValueError):
+            render.validate(data)
+
+    def test_full_bleed_scene_has_no_title_or_footer_bands(self):
+        from PIL import ImageChops
+        data=render.validate(self.episode)
+        for setting in ("classroom","schoolyard","street"):
+            scene=dict(data["scenes"][0],index=100,setting=setting,start=0,end=5,
+                       voice_start=.18,voice_end=4.5,envelope=[0]*120)
+            first=Stage(ROOT/"assets",data,find_font()).frame(scene,2,24)
+            changed=copy.deepcopy(data)
+            changed["brand"]="不燒在畫面上"
+            changed["footer"]="沒有底部白色文字區"
+            second_scene=dict(scene,headline="這是審稿標題")
+            second=Stage(ROOT/"assets",changed,find_font()).frame(second_scene,2,24)
+            self.assertIsNone(ImageChops.difference(first,second).getbbox())
+            for point in ((5,5),(1075,1915)):
+                self.assertNotEqual(first.getpixel(point),(255,249,237))
+            self.assertEqual(first.size,(1080,1920))
+
+    def test_hands_and_mouth_animate_without_resizing_the_body(self):
+        from PIL import ImageChops
+        stage=Stage(ROOT/"assets",render.validate(self.episode),find_font())
+        for name in ("doctor","alo","mei"):
+            rest=stage.character_sprite(name,780,0,0)
+            point=stage.character_sprite(name,780,0,0,gesture="point",phase=2)
+            moving=stage.character_sprite(name,780,0,0,gesture="talk",phase=1)
+            moved=stage.character_sprite(name,780,0,0,gesture="talk",phase=4)
+            talking=stage.character_sprite(name,780,3,0)
+            self.assertEqual(rest.size,point.size)
+            self.assertIsNotNone(ImageChops.difference(rest,point).getbbox())
+            self.assertIsNotNone(ImageChops.difference(moving,moved).getbbox())
+            self.assertIsNotNone(ImageChops.difference(rest,talking).getbbox())
+            self.assertIsNone(ImageChops.difference(rest.crop((0,620,rest.width,780)),
+                                                  point.crop((0,620,point.width,780))).getbbox())
 
     def test_teaching_material_is_visible_in_draft_and_invalidates_approval(self):
         data=render.validate(self.episode)
@@ -109,8 +158,8 @@ class PipelineTests(unittest.TestCase):
         plain=dict(scene,index=91,teaching={"mode":"dialogue"})
         no_model=stage.frame(plain,2,24)
         from PIL import ImageChops
-        diff=ImageChops.difference(with_model.crop((400,820,680,1180)),
-                                   no_model.crop((400,820,680,1180)))
+        diff=ImageChops.difference(with_model.crop((450,1040,630,1410)),
+                                   no_model.crop((450,1040,630,1410)))
         self.assertIsNotNone(diff.getbbox())
         before=render.revision(data)
         board=next(s for s in data["scenes"] if s["teaching"]["mode"]=="blackboard")
@@ -155,6 +204,8 @@ class PipelineTests(unittest.TestCase):
                                    "-map","0:v:0","-map","0:a:0","-f","null","-"],capture_output=True)
             self.assertEqual(result.returncode,0,result.stderr.decode(errors="replace"))
             self.assertIn(b"180x320",result.stderr)
+            self.assertIn(b"SAR 1:1 DAR 9:16",result.stderr)
+            self.assertEqual(manifest["aspect_ratio"],"9:16")
             self.assertIn(b"Audio: aac",result.stderr)
             self.assertGreater((output/"episode.srt").stat().st_size,50)
             with wave.open(str(output/"mix.wav"),"rb") as mix:

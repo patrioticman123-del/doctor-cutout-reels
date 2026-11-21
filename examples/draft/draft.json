@@ -1,11 +1,15 @@
 {
   "status": "awaiting_user_review",
-  "revision": "de825c1b4c057dd6",
+  "revision": "7fb4c6f94cf9d104",
   "estimated_duration": 49.02837209302326,
   "target_duration": [
     30,
     60
   ],
+  "aspect_ratio": "9:16",
+  "layout": "full_scene",
+  "width": 1080,
+  "height": 1920,
   "sources": [],
   "timeline": [
     {
@@ -24,6 +28,7 @@
       "action": "教室黑板前，阿洛點頭搶話，醫師在旁聽。",
       "reaction": "醫師維持冷面，等阿洛說完。",
       "claims": [],
+      "gesture": "question",
       "teaching": {
         "mode": "dialogue"
       },
@@ -31,7 +36,8 @@
       "start": 0,
       "end": 5.696279069767442,
       "voice_start": 0.18,
-      "voice_end": 5.296279069767442
+      "voice_end": 5.296279069767442,
+      "draft_pose": true
     },
     {
       "speaker": "doctor",
@@ -58,11 +64,13 @@
           "讓角色接話"
         ]
       },
+      "gesture": "point",
       "index": 1,
       "start": 5.696279069767442,
       "end": 12.090232558139535,
       "voice_start": 5.876279069767442,
-      "voice_end": 11.690232558139535
+      "voice_end": 11.690232558139535,
+      "draft_pose": true
     },
     {
       "speaker": "mei",
@@ -80,6 +88,7 @@
       "action": "校園中美芳提出教具建議，醫師聽完帶回教室示範。",
       "reaction": "不把每一集固定成有人說錯、醫師糾正。",
       "claims": [],
+      "gesture": "talk",
       "teaching": {
         "mode": "dialogue"
       },
@@ -87,7 +96,8 @@
       "start": 12.090232558139535,
       "end": 18.01906976744186,
       "voice_start": 12.270232558139535,
-      "voice_end": 17.61906976744186
+      "voice_end": 17.61906976744186,
+      "draft_pose": true
     },
     {
       "speaker": "doctor",
@@ -112,11 +122,13 @@
           "骨頭模型：通用示意"
         ]
       },
+      "gesture": "present",
       "index": 3,
       "start": 18.01906976744186,
       "end": 23.947906976744186,
       "voice_start": 18.19906976744186,
-      "voice_end": 23.547906976744187
+      "voice_end": 23.547906976744187,
+      "draft_pose": true
     },
     {
       "speaker": "alo",
@@ -134,6 +146,7 @@
       "action": "街道中阿洛追問，醫師保持同尺度冷面聽完。",
       "reaction": "從教具示範轉成生活情境，用接話推進笑點。",
       "claims": [],
+      "gesture": "question",
       "teaching": {
         "mode": "dialogue"
       },
@@ -141,7 +154,8 @@
       "start": 23.947906976744186,
       "end": 29.74418604651163,
       "voice_start": 24.127906976744185,
-      "voice_end": 29.24418604651163
+      "voice_end": 29.24418604651163,
+      "draft_pose": true
     },
     {
       "speaker": "mei",
@@ -167,11 +181,13 @@
           "模型引出觀察"
         ]
       },
+      "gesture": "present",
       "index": 5,
       "start": 29.74418604651163,
       "end": 35.67302325581395,
       "voice_start": 29.92418604651163,
-      "voice_end": 35.27302325581395
+      "voice_end": 35.27302325581395,
+      "draft_pose": true
     },
     {
       "speaker": "doctor",
@@ -197,11 +213,13 @@
           "直接開拍"
         ]
       },
+      "gesture": "point",
       "index": 6,
       "start": 35.67302325581395,
       "end": 42.49953488372093,
       "voice_start": 35.85302325581395,
-      "voice_end": 41.89953488372093
+      "voice_end": 41.89953488372093,
+      "draft_pose": true
     },
     {
       "speaker": "alo",
@@ -216,9 +234,10 @@
       "setting": "classroom",
       "motion": "still",
       "hold": 1.0,
-      "action": "回到同尺度雙人對話，阿洛說完靜止冷場。",
+      "action": "滿版教室雙人同框；阿洛說話時揮手，結束後收手留白。",
       "reaction": "醫師在旁聽，停在分鏡審稿階段，等待使用者修改。",
       "claims": [],
+      "gesture": "wave",
       "teaching": {
         "mode": "dialogue"
       },
@@ -226,7 +245,8 @@
       "start": 42.49953488372093,
       "end": 49.02837209302326,
       "voice_start": 42.67953488372093,
-      "voice_end": 48.02837209302326
+      "voice_end": 48.02837209302326,
+      "draft_pose": true
     }
   ]
 }

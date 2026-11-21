@@ -1,5 +1,5 @@
 {
-  "doctor": {"image":"doctor.png", "mouth":[0.493,0.359], "mouth_width":0.064, "eyes":[[0.456,0.264],[0.543,0.264]], "skin":"#F2C59A"},
-  "alo": {"image":"alo.png", "mouth":[0.488,0.364], "mouth_width":0.064, "eyes":[[0.437,0.273],[0.557,0.273]], "skin":"#EFC09A"},
-  "mei": {"image":"mei.png", "mouth":[0.500,0.317], "mouth_width":0.060, "eyes":[[0.435,0.235],[0.566,0.235]], "skin":"#F2C59A"}
+  "doctor": {"image":"doctor.png", "mouth":[0.493,0.359], "mouth_width":0.064, "eyes":[[0.456,0.264],[0.543,0.264]], "skin":"#F2C59A", "shoulder":[0.370,0.425], "arm_start":0.420,"arm_end":0.748,"hand":[0.24,0.70]},
+  "alo": {"image":"alo.png", "mouth":[0.488,0.364], "mouth_width":0.064, "eyes":[[0.437,0.273],[0.557,0.273]], "skin":"#EFC09A", "shoulder":[0.355,0.442], "arm_start":0.435,"arm_end":0.747,"hand":[0.22,0.695]},
+  "mei": {"image":"mei.png", "mouth":[0.500,0.317], "mouth_width":0.060, "eyes":[[0.435,0.235],[0.566,0.235]], "skin":"#F2C59A", "shoulder":[0.365,0.414], "arm_start":0.410,"arm_end":0.733,"hand":[0.23,0.66]}
 }

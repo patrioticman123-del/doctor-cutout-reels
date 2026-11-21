@@ -13,6 +13,39 @@ CORAL = "#EF745C"
 W, H = 1080, 1920
 TEACHING_LABELS = {"dialogue":"角色對話", "blackboard":"黑板講解",
                    "bone_model":"骨頭模型示範", "quiz":"學生猜題", "comparison":"並列比較"}
+GESTURE_LABELS = {"auto":"依對話選擇", "rest":"放鬆聆聽", "talk":"說話擺手",
+                  "point":"指向黑板", "present":"攤手介紹", "question":"舉手提問", "wave":"揮手"}
+
+
+def resolved_gesture(scene):
+    value=scene.get("gesture","auto")
+    if value!="auto":
+        return value
+    mode=scene.get("teaching",{}).get("mode","dialogue")
+    if scene["speaker"]=="doctor" and mode in ("blackboard","quiz","comparison"):
+        return "point"
+    if mode=="bone_model":
+        return "present"
+    return "question" if scene["speaker"]=="alo" else "talk"
+
+
+def gesture_angles(gesture,phase,direction=1):
+    wave=math.sin(phase*math.tau/6)
+    if gesture=="talk":
+        left,right=0,14+12*wave
+    elif gesture=="point":
+        left,right=0,60+5*wave
+    elif gesture=="present":
+        left,right=0,45+8*wave
+    elif gesture=="question":
+        left,right=0,85+8*wave
+    elif gesture=="wave":
+        left,right=0,100+12*wave
+    else:
+        left,right=0,0
+    if direction<0:
+        left,right=-right,-left
+    return round(left/5)*5,round(right/5)*5
 
 
 def find_font(explicit=None):
@@ -100,98 +133,108 @@ class Stage:
                            for name,rig in self.rigs.items()}
         self.backgrounds = {}
         self.sprites = {}
+        self.arm_layers = {}
         self.caption_cache = {}
 
     def text(self, draw, xy, value, size, fill=INK, anchor=None):
         draw.text(xy, value, font=font(self.font_path, size), fill=fill, anchor=anchor)
 
     def background(self, scene):
-        key = scene["index"]
-        if key in self.backgrounds:
-            return self.backgrounds[key].copy()
-        setting = scene["setting"]
-        im = Image.new("RGB", (W, H), PAPER)
-        d = ImageDraw.Draw(im)
-        if setting == "classroom":
-            d.rectangle((0,455,W,1470),fill="#E7C995")
-            d.rectangle((45,540,730,980),fill="#855D48",outline=INK,width=9)
-            d.rectangle((65,560,710,950),fill="#315D57",outline=INK,width=5)
-            self.text(d,(100,595),"今天的健康課",53,"#F7F0CF")
-            d.line((105,690,560,690),fill="#D5DEBE",width=5)
-            d.rectangle((790,540,1040,980),fill="#FCF3DB",outline=INK,width=8)
-            d.rectangle((810,560,1020,960),fill="#9ACACC")
-            d.line((915,560,915,960),fill=INK,width=6)
-            d.line((810,760,1020,760),fill=INK,width=6)
-            d.rectangle((0,1235,W,1470),fill="#C79C75")
-            for x in (100,480,860):
-                d.line((x,1235,x-150,1470),fill="#A77B5B",width=4)
-            for x in (75,520,880):
-                d.polygon([(x,1130),(x+160,1130),(x+190,1185),(x-25,1185)],fill="#D49353",outline=INK,width=6)
-                d.line((x,1185,x-10,1340),fill=INK,width=9)
-                d.line((x+160,1185,x+170,1340),fill=INK,width=9)
-        elif setting == "schoolyard":
-            d.rectangle((0,455,W,1470),fill="#A9D2DA")
-            d.ellipse((110,485,350,580),fill=PAPER)
-            d.rectangle((60,650,1030,1250),fill="#E4BD87",outline=INK,width=9)
-            d.polygon([(20,650),(545,500),(1070,650)],fill="#577F79",outline=INK,width=9)
-            self.text(d,(545,665),"青禾小學",57,INK,"ma")
-            for x in (115,305,705,890):
-                for y in (790,1000):
-                    d.rectangle((x,y,x+100,y+130),fill="#A6CDCE",outline=INK,width=7)
-                    d.line((x+50,y,x+50,y+130),fill=INK,width=4)
-            d.rectangle((470,1010,625,1250),fill="#755747",outline=INK,width=8)
-            d.rectangle((0,1240,W,1470),fill="#8EB283")
-            d.polygon([(460,1240),(630,1240),(890,1470),(200,1470)],fill="#D6CEB9")
-            for x in (20,980):
-                d.rectangle((x+30,1070,x+50,1310),fill="#80614D")
-                d.ellipse((x-60,890,x+140,1130),fill="#57846A",outline=INK,width=7)
-        else:  # Original neighborhood street; no copied town landmarks.
-            d.rectangle((0,455,W,1470),fill="#AFCEDA")
-            d.ellipse((80,500,320,590),fill=PAPER)
-            for x,color,roof in [(-50,"#D6B5B9","#665D7D"),(380,"#E5CA94","#6B8D7E"),(810,"#B3C5AC","#9B6A60")]:
-                d.rectangle((x,800,x+350,1240),fill=color,outline=INK,width=8)
-                d.polygon([(x-25,800),(x+175,650),(x+375,800)],fill=roof,outline=INK,width=8)
-                d.rectangle((x+40,865,x+140,1000),fill="#C6DFD8",outline=INK,width=6)
-                d.rectangle((x+210,1040,x+300,1240),fill="#735E56",outline=INK,width=6)
-            d.rectangle((0,1240,W,1320),fill="#D3CAB9",outline=INK,width=6)
-            d.rectangle((0,1320,W,1470),fill="#686D78")
-            for x in range(0,W,230):
-                d.rectangle((x,1400,x+125,1415),fill="#F5E7AA")
-        # Header and title remain in social-safe margins.
-        d.rounded_rectangle((62,170,650,242), radius=9, fill=INK)
-        self.text(d, (88,181), self.episode["brand"], 39, PAPER)
-        self.text(d, (1015,185), f"{scene['index']+1:02}", 38, INK, "ra")
-        face, lines = fit(scene["headline"], self.font_path, 81, 950, 2)
-        for j,line in enumerate(lines):
-            d.text((62,270+j*91),line,font=face,fill=INK)
-        d.rectangle((0,1470,W,H),fill=PAPER)
-        # Footer has generous margin above platform navigation.
-        self.text(d,(65,1790),self.episode["footer"],31,"#5D6270")
-        d.line((65,1765,1015,1765),fill=INK,width=3)
-        self.backgrounds[key] = im
-        return im.copy()
+        from scenery import draw_scene
+        key=scene["index"]
+        if key not in self.backgrounds:
+            self.backgrounds[key]=draw_scene(scene,self.text)
+        return self.backgrounds[key].copy()
 
-    def character_sprite(self, name, height, mouth, blink):
-        key = (name, height, mouth, blink)
+    def character_parts(self,name,height):
+        """Hinge the existing cut-paper sleeves/hands; retain the original body scale."""
+        key=(name,height)
+        if key in self.arm_layers:
+            return self.arm_layers[key]
+        from PIL import ImageChops, ImageOps
+        source=self.characters[name]
+        rig=self.rigs[name]
+        iw,ih=source.size
+        sx,sy=rig["shoulder"]
+        top,end=rig["arm_start"],rig["arm_end"]
+        polygon=[(sx+.015,top),(.335,top+.08),(.327,.58),(.307,.655),
+                 (.305,end),(.08,end),(.08,top)]
+        masks=[]
+        for side in (0,1):
+            mask=Image.new("L",source.size)
+            ImageDraw.Draw(mask).polygon([(round((1-x if side else x)*iw),round(y*ih))
+                                         for x,y in polygon],fill=255)
+            masks.append(mask)
+        alpha=source.getchannel("A")
+        body=source.copy()
+        body.putalpha(ImageChops.multiply(alpha,ImageOps.invert(ImageChops.lighter(*masks))))
+        pieces=[body]
+        for mask in masks:
+            limb=source.copy()
+            limb.putalpha(ImageChops.multiply(alpha,mask))
+            pieces.append(limb)
+        pad=180
+        size=(round((iw+2*pad)*height/ih),height)
+        padded=[]
+        for piece in pieces:
+            layer=Image.new("RGBA",(iw+2*pad,ih))
+            layer.alpha_composite(piece,(pad,0))
+            padded.append(layer.resize(size,Image.Resampling.LANCZOS))
+        scale=height/ih
+        pivots=[((pad+sx*iw)*scale,sy*ih*scale),
+                ((pad+(1-sx)*iw)*scale,sy*ih*scale)]
+        value=(padded,pivots,round(pad*scale))
+        self.arm_layers[key]=value
+        return value
+
+    def hand_anchor(self,name,height,gesture,phase,direction):
+        rig=self.rigs[name]
+        iw,ih=self.characters[name].size
+        sx,sy=rig["shoulder"]
+        hx,hy=rig["hand"]
+        side=1 if direction>0 else 0
+        px=(1-sx if side else sx)*iw
+        py=sy*ih
+        x=(1-hx if side else hx)*iw
+        y=hy*ih
+        angle=math.radians(gesture_angles(gesture,phase,direction)[side])
+        dx,dy=x-px,y-py
+        return ((px+dx*math.cos(angle)+dy*math.sin(angle))*height/ih,
+                (py-dx*math.sin(angle)+dy*math.cos(angle))*height/ih)
+
+    def character_sprite(self, name, height, mouth, blink, gesture="rest", phase=0, direction=1):
+        if gesture=="rest":
+            phase=0
+        key = (name, height, mouth, blink, gesture, phase, direction)
         if key in self.sprites:
             return self.sprites[key]
-        image = self.characters[name].copy()
+        pieces,pivots,pad=self.character_parts(name,height)
+        image=pieces[0].copy()
+        for arm,pivot,angle in zip(pieces[1:],pivots,gesture_angles(gesture,phase,direction)):
+            image.alpha_composite(arm.rotate(angle,resample=Image.Resampling.BICUBIC,center=pivot)
+                                  if angle else arm)
         rig = self.rigs[name]
         draw = ImageDraw.Draw(image)
-        iw, ih = image.size
-        mx,my = rig["mouth"][0]*iw,rig["mouth"][1]*ih
-        mw = rig["mouth_width"]*iw
+        iw,ih=self.characters[name].size
+        scale=height/ih
+        mx,my=pad+rig["mouth"][0]*iw*scale,rig["mouth"][1]*height
+        mw=rig["mouth_width"]*iw*scale
         if mouth:
-            mh = (16+mouth*12)
-            draw.ellipse((mx-mw/2,my-mh/2,mx+mw/2,my+mh/2), fill="#271F26")
-            if mouth == 3:
-                draw.ellipse((mx-mw*.25,my+mh*.12,mx+mw*.25,my+mh*.4),fill="#D37A77")
+            draw.rounded_rectangle((mx-mw*.65,my-4,mx+mw*.65,my+4),radius=3,fill=rig["skin"])
+            width=mw*(.8 if mouth==3 else (1.2 if mouth==2 else 1))
+            mh=(10,18,27)[mouth-1]
+            draw.ellipse((mx-width/2,my-mh/2,mx+width/2,my+mh/2), fill="#271F26")
+            if mouth==2:
+                draw.rectangle((mx-width*.28,my-mh*.32,mx+width*.28,my-mh*.05),fill="#FFF8ED")
+            if mouth==3:
+                draw.ellipse((mx-width*.25,my+mh*.12,mx+width*.25,my+mh*.4),fill="#D37A77")
         if blink:
             for ex,ey in rig["eyes"]:
-                x,y = ex*iw,ey*ih
-                draw.ellipse((x-62,y-77,x+62,y+77),fill=rig["skin"])
-                draw.line((x-62,y,x+62,y),fill=INK,width=8)
-        image = image.resize((round(height*iw/ih),height),Image.Resampling.LANCZOS)
+                x,y = pad+ex*iw*scale,ey*height
+                draw.ellipse((x-62*scale,y-77*scale,x+62*scale,y+77*scale),fill=rig["skin"])
+                draw.line((x-62*scale,y,x+62*scale,y),fill=INK,width=4)
+        if len(self.sprites)>=96:
+            self.sprites.pop(next(iter(self.sprites)))
         self.sprites[key] = image
         return image
 
@@ -207,35 +250,35 @@ class Stage:
         d=ImageDraw.Draw(panel)
         chalk="#F7F0CF"
         # Center teaching area leaves both actors at the exact same locked scale.
-        d.rectangle((320,500,760,1040),fill="#855D48",outline=INK,width=8)
-        d.rectangle((335,515,745,1025),fill="#315D57",outline=INK,width=4)
-        face,lines=fit(lesson["title"],self.font_path,40,365,2)
+        d.rectangle((200,110,880,720),fill="#855D48",outline=INK,width=8)
+        d.rectangle((218,128,862,702),fill="#315D57",outline=INK,width=4)
+        face,lines=fit(lesson["title"],self.font_path,52,570,2)
         for j,line in enumerate(lines):
-            d.text((355,535+j*49),line,font=face,fill=chalk)
-        d.line((355,645,725,645),fill=chalk,width=3)
+            d.text((250,155+j*60),line,font=face,fill=chalk)
+        d.line((250,290,830,290),fill=chalk,width=3)
         points=lesson["points"]
         if mode=="comparison":
             for j,point in enumerate(points):
-                x=348+j*197
-                d.rounded_rectangle((x,690,x+184,985),radius=8,fill="#F7F0CF",outline=INK,width=4)
-                face,lines=fit(point,self.font_path,36,155,3)
+                x=240+j*310
+                d.rounded_rectangle((x,335,x+290,665),radius=8,fill="#F7F0CF",outline=INK,width=4)
+                face,lines=fit(point,self.font_path,46,250,3)
                 for k,line in enumerate(lines):
-                    d.text((x+13,725+k*52),line,font=face,fill=INK)
+                    d.text((x+20,375+k*62),line,font=face,fill=INK)
         else:
             for j,point in enumerate(points):
-                y=685+j*100
+                y=330+j*115
                 prefix=chr(65+j)+" " if mode=="quiz" else "• "
-                face,lines=fit(prefix+point,self.font_path,36,365,2)
+                face,lines=fit(prefix+point,self.font_path,44,570,2)
                 for k,line in enumerate(lines):
-                    d.text((355,y+k*44),line,font=face,fill=chalk)
+                    d.text((250,y+k*50),line,font=face,fill=chalk)
                 if mode=="blackboard" and j<len(points)-1:
-                    d.line((690,y+65,690,y+86),fill=YELLOW,width=4)
-                    d.polygon([(682,y+78),(690,y+89),(698,y+78)],fill=YELLOW)
+                    d.line((800,y+75,800,y+96),fill=YELLOW,width=4)
+                    d.polygon([(792,y+88),(800,y+99),(808,y+88)],fill=YELLOW)
         # Chalk tray and freestanding supports also work on the street/campus.
-        d.rectangle((310,1040,770,1060),fill="#B58C61",outline=INK,width=4)
-        d.rectangle((675,1031,715,1039),fill=chalk)
-        d.line((360,1060,335,1325),fill=INK,width=9)
-        d.line((720,1060,745,1325),fill=INK,width=9)
+        d.rectangle((190,720,890,746),fill="#B58C61",outline=INK,width=4)
+        d.rectangle((755,710,805,719),fill=chalk)
+        d.line((260,746,220,1500),fill=INK,width=9)
+        d.line((820,746,860,1500),fill=INK,width=9)
         self.backgrounds[key]=panel
         return panel
 
@@ -250,30 +293,25 @@ class Stage:
         d=ImageDraw.Draw(layer)
         if lesson["mode"]=="bone_model":
             # Generic teaching prop, deliberately not a clinical anatomy diagram.
-            d.rectangle((350,1175,730,1220),fill="#D19B61",outline=INK,width=7)
-            d.line((380,1220,370,1415),fill=INK,width=12)
-            d.line((700,1220,710,1415),fill=INK,width=12)
-            d.ellipse((460,1130,620,1175),fill="#91A7A4",outline=INK,width=6)
-            d.line((540,1000,540,1150),fill=INK,width=8)
+            d.rectangle((350,1410,730,1460),fill="#D19B61",outline=INK,width=7)
+            d.line((380,1460,370,1730),fill=INK,width=12)
+            d.line((700,1460,710,1730),fill=INK,width=12)
+            d.ellipse((460,1360,620,1405),fill="#91A7A4",outline=INK,width=6)
+            d.line((540,1230,540,1380),fill=INK,width=8)
             # An outline mask makes a single clean paper-cut bone silhouette.
             shape=Image.new("L",(W,H))
             sd=ImageDraw.Draw(shape)
-            sd.rounded_rectangle((518,854,562,1065),radius=18,fill=255)
-            for box in [(479,820,548,890),(535,821,604,891),
-                        (479,1030,548,1100),(535,1030,604,1100)]:
+            sd.rounded_rectangle((518,1084,562,1295),radius=18,fill=255)
+            for box in [(479,1050,548,1120),(535,1051,604,1121),
+                        (479,1260,548,1330),(535,1260,604,1330)]:
                 sd.ellipse(box,fill=255)
             from PIL import ImageFilter
             outline=shape.filter(ImageFilter.MaxFilter(13))
             layer.paste(INK,(0,0,W,H),outline)
             layer.paste("#F5EAD1",(0,0,W,H),shape)
             d=ImageDraw.Draw(layer)
-            d.rounded_rectangle((380,1232,700,1285),radius=6,fill=PAPER,outline=INK,width=3)
-            self.text(d,(540,1236),"骨頭教具・示意",32,INK,"ma")
-        elif scene["speaker"]=="doctor":
-            # A pointer aligned with the existing hand, not an invented arm rig.
-            d.line((310,1210,480,895),fill=INK,width=11)
-            d.line((310,1210,480,895),fill="#B58C61",width=5)
-            d.ellipse((470,885,490,905),fill=YELLOW,outline=INK,width=3)
+            d.rounded_rectangle((380,1472,700,1525),radius=6,fill=PAPER,outline=INK,width=3)
+            self.text(d,(540,1476),"骨頭教具・示意",32,INK,"ma")
         self.backgrounds[key]=layer
         return layer
 
@@ -288,7 +326,10 @@ class Stage:
         pos=int(max(0,t-scene["voice_start"])*fps)
         level=scene["envelope"][min(pos,len(scene["envelope"])-1)] if speaking else 0
         mouth=0 if level < .08 else min(3,1+int(level*2.8))
-        blink=int(int(t*12)%53 in (0,1))
+        draft_pose=scene.get("draft_pose",False)
+        if draft_pose:
+            mouth=2
+        blink=0 if draft_pose else int(int(t*12)%53 in (0,1))
         step=round(local*10)/10  # Intentionally stepped cut-paper movement.
         bounce=round(math.sin(step*13)*5) if speaking and level>.08 else 0
         shot=scene["shot"]
@@ -296,36 +337,50 @@ class Stage:
         focus=scene["speaker"] if shot=="punch" else shot
         # One locked scale for EVERY actor in EVERY board. Focus never shrinks
         # listeners or enlarges a speaker. Shared baseline keeps feet aligned.
-        positions=(-50,280,610) if len(cast)==3 else ((-80,640) if lesson["mode"]!="dialogue" else (20,550))
-        layout={name:(positions[i],660,780) for i,name in enumerate(cast)}
+        positions=(-100,240,580) if len(cast)==3 else (-85,565)
+        layout={name:(positions[i],760,900) for i,name in enumerate(cast)}
         # Compose in a masked stage to protect the subtitle safe area.
         stage=Image.new("RGBA",(W,H))
+        pointer=None
+        selected_gesture=resolved_gesture(scene)
         draw_order=list(cast)
         for name in draw_order:
             x,y,height=layout[name]
-            sprite=self.character_sprite(name,height,mouth if scene["speaker"]==name else 0,
-                                         blink if name!="mei" else 0)
             active=scene["speaker"]==name
+            direction=1 if x<300 else -1
+            gesture=selected_gesture if active and (draft_pose or speaking or selected_gesture=="point") else "rest"
+            phase=2 if draft_pose else int(local*4)%6
+            sprite=self.character_sprite(name,height,mouth if scene["speaker"]==name else 0,
+                                         blink if name!="mei" else 0,gesture=gesture,phase=phase,direction=direction)
             motion=scene.get("motion","nod")
             ox=bounce if active and motion=="shake" else 0
             oy=bounce if active and motion=="nod" else 0
-            stage.alpha_composite(sprite,(x+ox,y+oy))
-        im.paste(stage.crop((0,455,W,1470)),(0,455),stage.crop((0,455,W,1470)))
+            pad=self.character_parts(name,height)[2]
+            stage.alpha_composite(sprite,(x-pad+ox,y+oy))
+            if active and gesture=="point" and lesson["mode"] not in ("dialogue","bone_model"):
+                hx,hy=self.hand_anchor(name,height,gesture,phase,direction)
+                pointer=(x+ox+hx,y+oy+hy)
+        im.paste(stage,(0,0),stage)
         props=self.teaching_props(scene)
         if props is not None:
             im.paste(props,(0,0),props)
         d=ImageDraw.Draw(im)
-        who=self.episode["names"][scene["speaker"]]
-        d.rounded_rectangle((65,1490,390,1550),radius=8,fill=CORAL if scene["speaker"]!="doctor" else "#A4D1C6",outline=INK,width=3)
-        self.text(d,(84,1494),who,35)
+        if pointer is not None:
+            d.line((*pointer,540,640),fill=INK,width=10)
+            d.line((*pointer,540,640),fill="#B58C61",width=5)
+            d.ellipse((531,631,549,649),fill=YELLOW,outline=INK,width=3)
+        if not self.episode.get("show_subtitles",True):
+            return im
         caption=subtitle_at(scene,t)
         cache_key=(scene["index"],caption)
         if cache_key not in self.caption_cache:
-            self.caption_cache[cache_key]=fit(caption,self.font_path,66,944,2)
+            self.caption_cache[cache_key]=fit(caption,self.font_path,58,900,2)
         face,lines=self.caption_cache[cache_key]
+        top=1750-(len(lines)-1)*72
+        overlay=Image.new("RGBA",(W,H))
+        ImageDraw.Draw(overlay).rounded_rectangle((65,top-10,1015,top+len(lines)*72+8),radius=12,fill=(15,20,28,160))
+        im=Image.alpha_composite(im.convert("RGBA"),overlay).convert("RGB")
+        d=ImageDraw.Draw(im)
         for j,line in enumerate(lines):
-            d.text((65,1568+j*79),line,font=face,fill=INK)
-        progress=min(1,max(0,local/(scene["end"]-scene["start"])))
-        d.rectangle((65,1845,1015,1857),fill="#DDD6C8")
-        d.rectangle((65,1845,65+950*progress,1857),fill=INK)
+            d.text((540,top+j*72),line,font=face,fill="#FFFFFF",anchor="ma",stroke_width=2,stroke_fill="#10141C")
         return im
