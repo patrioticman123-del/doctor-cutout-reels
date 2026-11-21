@@ -14,7 +14,7 @@ from PIL import Image, ImageDraw
 import imageio_ffmpeg
 
 from audio import assemble
-from visuals import Stage, chunks, find_font, fit
+from visuals import Stage, chunks, find_font, fit, TEACHING_LABELS
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_VOICES = {
@@ -90,6 +90,21 @@ def validate(data):
         scene.setdefault("motion","nod")
         if scene["motion"] not in ("nod","shake","still"):
             raise ValueError(f"Scene {i+1}: motion must be nod, shake or still")
+        lesson=scene.setdefault("teaching",{"mode":"dialogue"})
+        if not isinstance(lesson,dict) or lesson.get("mode") not in TEACHING_LABELS:
+            raise ValueError(f"Scene {i+1}: invalid teaching mode")
+        if lesson["mode"]!="dialogue":
+            if len(cast)!=2:
+                raise ValueError(f"Scene {i+1}: teaching props need two actors so the board/model stays visible")
+            if not isinstance(lesson.get("title"),str) or not 1<=len(lesson["title"])<=16:
+                raise ValueError(f"Scene {i+1}: teaching.title must have 1–16 characters")
+            points=lesson.get("points")
+            if not isinstance(points,list) or not 1<=len(points)<=3 or any(not isinstance(p,str) or not 1<=len(p)<=16 for p in points):
+                raise ValueError(f"Scene {i+1}: teaching.points must have 1–3 short strings (1–16 characters)")
+            if lesson["mode"]=="comparison" and len(points)!=2:
+                raise ValueError(f"Scene {i+1}: comparison requires exactly two points")
+            if lesson["mode"]=="bone_model" and len(points)!=1:
+                raise ValueError(f"Scene {i+1}: bone_model uses one short point above the model")
         scene.setdefault("hold",.4)
         if isinstance(scene["hold"],bool) or not isinstance(scene["hold"],(int,float)) or not .1 <= scene["hold"] <= 2:
             raise ValueError(f"Scene {i+1}: hold must be 0.1–2 seconds")
@@ -152,9 +167,13 @@ def draft(episode,out,font_path):
                  f"角色：{cast}｜鏡頭：{shot_label}\n",
                  f"**{name}：** {scene['text']}\n",f"動作：{scene['action']}\n",
                  f"接話／反應：{scene['reaction']}\n",f"字卡：{scene['headline']}\n",
+                 f"演法：{TEACHING_LABELS[scene['teaching']['mode']]}\n",
                  f"來源：{', '.join(scene['claims']) or '純劇情／範本，不含臨床說法'}\n"]
         esc=html.escape
-        cards.append(f'<article><img src="{image_name}" alt="分鏡 {i+1}"><div><small>{i+1:02} · {setting} · {end-cursor:.1f}s（估）</small><h2>{esc(scene["headline"])}</h2><p><b>{esc(name)}：</b>{esc(scene["text"])}</p><p>動作：{esc(scene["action"])}</p><p>反應：{esc(scene["reaction"])}</p><p>鏡頭：{esc(shot_label)} · 來源：{esc(", ".join(scene["claims"]) or "無臨床說法")}</p></div></article>')
+        teaching_label=TEACHING_LABELS[scene["teaching"]["mode"]]
+        if scene["teaching"]["mode"]!="dialogue":
+            rows.append(f"教具內容：{scene['teaching']['title']}；{'／'.join(scene['teaching']['points'])}\n")
+        cards.append(f'<article><img src="{image_name}" alt="分鏡 {i+1}"><div><small>{i+1:02} · {setting} · {esc(teaching_label)} · {end-cursor:.1f}s（估）</small><h2>{esc(scene["headline"])}</h2><p><b>{esc(name)}：</b>{esc(scene["text"])}</p><p>動作：{esc(scene["action"])}</p><p>反應：{esc(scene["reaction"])}</p><p>鏡頭：{esc(shot_label)} · 來源：{esc(", ".join(scene["claims"]) or "無臨床說法")}</p></div></article>')
         timeline.append({k:v for k,v in item.items() if k!="envelope"})
         cursor=end
     sheet=Image.new("RGB",(810,480*math.ceil(len(thumbnails)/3)),"#FFF9ED")
@@ -290,6 +309,13 @@ def main():
         face=find_font(args.font)
         for scene in data["scenes"]:
             fit(scene["headline"],face,81,950,2)
+            if scene["teaching"]["mode"]!="dialogue":
+                fit(scene["teaching"]["title"],face,40,365,2)
+                for point in scene["teaching"]["points"]:
+                    if scene["teaching"]["mode"]=="comparison":
+                        fit(point,face,36,155,3)
+                    else:
+                        fit("A "+point,face,36,365,2)
             for part in chunks(scene["text"]):
                 fit(part,face,66,944,2)
         if args.check:

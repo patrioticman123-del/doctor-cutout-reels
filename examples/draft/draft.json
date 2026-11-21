@@ -1,7 +1,7 @@
 {
   "status": "awaiting_user_review",
-  "revision": "03dce0acb85c7a69",
-  "estimated_duration": 47.16790697674419,
+  "revision": "de825c1b4c057dd6",
+  "estimated_duration": 49.02837209302326,
   "target_duration": [
     30,
     60
@@ -24,6 +24,9 @@
       "action": "教室黑板前，阿洛點頭搶話，醫師在旁聽。",
       "reaction": "醫師維持冷面，等阿洛說完。",
       "claims": [],
+      "teaching": {
+        "mode": "dialogue"
+      },
       "index": 0,
       "start": 0,
       "end": 5.696279069767442,
@@ -36,21 +39,30 @@
         "doctor",
         "alo"
       ],
-      "text": "先給我一個主題。我們查完資料，再開始演。",
-      "headline": "先有主題，才有故事",
+      "text": "先有主題，再查資料。你看黑板，我把關係整理給你看。",
+      "headline": "黑板把關係講清楚",
       "beat": "turn",
       "shot": "doctor",
       "setting": "classroom",
       "motion": "still",
       "hold": 0.4,
-      "action": "醫師平靜回應，維持固定尺度雙人構圖。",
-      "reaction": "阿洛停止搶話，留一個短停頓。",
+      "action": "師生同尺度分站黑板兩側，醫師用指示棒介紹條列與箭頭。",
+      "reaction": "阿洛看完黑板再接話，不讓教具成為純背景。",
       "claims": [],
+      "teaching": {
+        "mode": "blackboard",
+        "title": "每個主題各自編劇",
+        "points": [
+          "先查可靠資料",
+          "再整理故事關係",
+          "讓角色接話"
+        ]
+      },
       "index": 1,
       "start": 5.696279069767442,
-      "end": 10.927441860465118,
+      "end": 12.090232558139535,
       "voice_start": 5.876279069767442,
-      "voice_end": 10.527441860465117
+      "voice_end": 11.690232558139535
     },
     {
       "speaker": "mei",
@@ -58,43 +70,53 @@
         "doctor",
         "mei"
       ],
-      "text": "那骨科、復健科，每一集都用同一個答案，行不行？",
-      "headline": "每集都同一個答案？",
+      "text": "也能放個骨頭模型嗎？讓學生看著教具，再問問題。",
+      "headline": "也可以用模型上課",
       "beat": "escalate",
       "shot": "mei",
       "setting": "schoolyard",
       "motion": "nod",
       "hold": 0.4,
-      "action": "校門前，美芳接話；醫師留在同框。",
-      "reaction": "問題升級，等待醫師回答。",
+      "action": "校園中美芳提出教具建議，醫師聽完帶回教室示範。",
+      "reaction": "不把每一集固定成有人說錯、醫師糾正。",
       "claims": [],
+      "teaching": {
+        "mode": "dialogue"
+      },
       "index": 2,
-      "start": 10.927441860465118,
-      "end": 16.856279069767442,
-      "voice_start": 11.107441860465118,
-      "voice_end": 16.456279069767444
+      "start": 12.090232558139535,
+      "end": 18.01906976744186,
+      "voice_start": 12.270232558139535,
+      "voice_end": 17.61906976744186
     },
     {
       "speaker": "doctor",
       "cast": [
         "doctor",
-        "mei"
+        "alo"
       ],
-      "text": "場景可以一樣，資料、情境和笑點，每次都要重寫。",
-      "headline": "換主題，就重寫故事",
+      "text": "可以。模型放桌上，學生看得到，問題就能接著來。",
+      "headline": "骨頭模型上桌",
       "beat": "explain",
       "shot": "doctor",
-      "setting": "schoolyard",
+      "setting": "classroom",
       "motion": "shake",
       "hold": 0.4,
-      "action": "醫師輕微搖頭，人物尺度保持不變。",
-      "reaction": "美芳同尺度站在醫師旁邊，聽完再接話。",
+      "action": "醫師與阿洛同尺度站在模型兩側；桌面有骨頭教具與支架。",
+      "reaction": "阿洛觀察模型；本幕只展示教具演法，不提供疾病或精確解剖說法。",
       "claims": [],
+      "teaching": {
+        "mode": "bone_model",
+        "title": "先看教具，再提問",
+        "points": [
+          "骨頭模型：通用示意"
+        ]
+      },
       "index": 3,
-      "start": 16.856279069767442,
-      "end": 22.78511627906977,
-      "voice_start": 17.036279069767442,
-      "voice_end": 22.38511627906977
+      "start": 18.01906976744186,
+      "end": 23.947906976744186,
+      "voice_start": 18.19906976744186,
+      "voice_end": 23.547906976744187
     },
     {
       "speaker": "alo",
@@ -102,21 +124,24 @@
         "doctor",
         "alo"
       ],
-      "text": "懂了！我的工作，就是先把大家的問題問歪一點！",
-      "headline": "阿洛負責把問題問歪",
+      "text": "所以每次上課，都得把整個教室一起搬到街上嗎？",
+      "headline": "連教室都要搬出來？",
       "beat": "character",
       "shot": "alo",
       "setting": "street",
       "motion": "nod",
       "hold": 0.5,
-      "action": "街道對切阿洛，他很有自信地點頭。",
-      "reaction": "醫師冷面旁聽，不幫錯誤推論背書。",
+      "action": "街道中阿洛追問，醫師保持同尺度冷面聽完。",
+      "reaction": "從教具示範轉成生活情境，用接話推進笑點。",
       "claims": [],
+      "teaching": {
+        "mode": "dialogue"
+      },
       "index": 4,
-      "start": 22.78511627906977,
-      "end": 28.581395348837212,
-      "voice_start": 22.96511627906977,
-      "voice_end": 28.081395348837212
+      "start": 23.947906976744186,
+      "end": 29.74418604651163,
+      "voice_start": 24.127906976744185,
+      "voice_end": 29.24418604651163
     },
     {
       "speaker": "mei",
@@ -124,44 +149,59 @@
         "doctor",
         "mei"
       ],
-      "text": "我的工作，是替觀眾再問清楚。不能只有醫師一直講。",
-      "headline": "美芳替觀眾追問",
+      "text": "不用搬教室。看主題，選適合的場景、黑板或模型。",
+      "headline": "演法依主題來選",
       "beat": "dialogue",
       "shot": "mei",
       "setting": "street",
       "motion": "nod",
       "hold": 0.4,
-      "action": "同一街區切到美芳，呈現角色互相接話。",
-      "reaction": "醫師等待她說完，保留對話感。",
+      "action": "街道上用並列教學卡比較兩種敘事用途，兩位角色保持同尺度。",
+      "reaction": "美芳代觀眾回應，不把所有內容塞成醫師獨白。",
       "claims": [],
+      "teaching": {
+        "mode": "comparison",
+        "title": "兩種不同講法",
+        "points": [
+          "黑板整理關係",
+          "模型引出觀察"
+        ]
+      },
       "index": 5,
-      "start": 28.581395348837212,
-      "end": 34.74279069767442,
-      "voice_start": 28.761395348837212,
-      "voice_end": 34.342790697674424
+      "start": 29.74418604651163,
+      "end": 35.67302325581395,
+      "voice_start": 29.92418604651163,
+      "voice_end": 35.27302325581395
     },
     {
       "speaker": "doctor",
       "cast": [
         "doctor",
-        "mei",
         "alo"
       ],
-      "text": "先看腳本和分鏡。你改完、確認，我們才配音開拍。",
-      "headline": "腳本分鏡先審，再開拍",
+      "text": "來，猜一下：先看分鏡，還是直接開拍？你確認了才開拍。",
+      "headline": "先讓你看分鏡",
       "beat": "workflow",
       "shot": "wide",
       "setting": "classroom",
       "motion": "still",
       "hold": 0.6,
-      "action": "回到教室，三人同框，醫師交代製作順序。",
-      "reaction": "阿洛與美芳暫停接話，留閱讀時間。",
+      "action": "師生站在黑板兩側，列出兩個選項，先交給使用者審閱。",
+      "reaction": "阿洛準備接話；修改確認之前不生成聲音或影片。",
       "claims": [],
+      "teaching": {
+        "mode": "quiz",
+        "title": "下一步怎麼做？",
+        "points": [
+          "先看腳本分鏡",
+          "直接開拍"
+        ]
+      },
       "index": 6,
-      "start": 34.74279069767442,
-      "end": 40.87162790697675,
-      "voice_start": 34.92279069767442,
-      "voice_end": 40.27162790697675
+      "start": 35.67302325581395,
+      "end": 42.49953488372093,
+      "voice_start": 35.85302325581395,
+      "voice_end": 41.89953488372093
     },
     {
       "speaker": "alo",
@@ -169,21 +209,24 @@
         "doctor",
         "alo"
       ],
-      "text": "所以今天，只是讀劇？好，我先把我的演技存檔。",
-      "headline": "今天先讀劇，不偷開拍",
+      "text": "好！先讓你看分鏡，我才不會抱著骨頭模型演錯棚！",
+      "headline": "先審稿，才不會演錯棚",
       "beat": "punch",
       "shot": "punch",
       "setting": "classroom",
       "motion": "still",
       "hold": 1.0,
-      "action": "同尺度雙人構圖，阿洛說完後維持靜止冷場。",
-      "reaction": "醫師在旁冷面旁聽，畫面停住，等待使用者修改分鏡。",
+      "action": "回到同尺度雙人對話，阿洛說完靜止冷場。",
+      "reaction": "醫師在旁聽，停在分鏡審稿階段，等待使用者修改。",
       "claims": [],
+      "teaching": {
+        "mode": "dialogue"
+      },
       "index": 7,
-      "start": 40.87162790697675,
-      "end": 47.16790697674419,
-      "voice_start": 41.05162790697675,
-      "voice_end": 46.16790697674419
+      "start": 42.49953488372093,
+      "end": 49.02837209302326,
+      "voice_start": 42.67953488372093,
+      "voice_end": 48.02837209302326
     }
   ]
 }

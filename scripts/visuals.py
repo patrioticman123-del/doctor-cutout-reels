@@ -11,6 +11,8 @@ PAPER = "#FFF9ED"
 YELLOW = "#F8C854"
 CORAL = "#EF745C"
 W, H = 1080, 1920
+TEACHING_LABELS = {"dialogue":"角色對話", "blackboard":"黑板講解",
+                   "bone_model":"骨頭模型示範", "quiz":"學生猜題", "comparison":"並列比較"}
 
 
 def find_font(explicit=None):
@@ -193,8 +195,94 @@ class Stage:
         self.sprites[key] = image
         return image
 
+    def teaching_panel(self, scene):
+        lesson=scene.get("teaching",{"mode":"dialogue"})
+        mode=lesson["mode"]
+        if mode=="dialogue":
+            return None
+        key=("teaching",scene["index"])
+        if key in self.backgrounds:
+            return self.backgrounds[key]
+        panel=Image.new("RGBA",(W,H))
+        d=ImageDraw.Draw(panel)
+        chalk="#F7F0CF"
+        # Center teaching area leaves both actors at the exact same locked scale.
+        d.rectangle((320,500,760,1040),fill="#855D48",outline=INK,width=8)
+        d.rectangle((335,515,745,1025),fill="#315D57",outline=INK,width=4)
+        face,lines=fit(lesson["title"],self.font_path,40,365,2)
+        for j,line in enumerate(lines):
+            d.text((355,535+j*49),line,font=face,fill=chalk)
+        d.line((355,645,725,645),fill=chalk,width=3)
+        points=lesson["points"]
+        if mode=="comparison":
+            for j,point in enumerate(points):
+                x=348+j*197
+                d.rounded_rectangle((x,690,x+184,985),radius=8,fill="#F7F0CF",outline=INK,width=4)
+                face,lines=fit(point,self.font_path,36,155,3)
+                for k,line in enumerate(lines):
+                    d.text((x+13,725+k*52),line,font=face,fill=INK)
+        else:
+            for j,point in enumerate(points):
+                y=685+j*100
+                prefix=chr(65+j)+" " if mode=="quiz" else "• "
+                face,lines=fit(prefix+point,self.font_path,36,365,2)
+                for k,line in enumerate(lines):
+                    d.text((355,y+k*44),line,font=face,fill=chalk)
+                if mode=="blackboard" and j<len(points)-1:
+                    d.line((690,y+65,690,y+86),fill=YELLOW,width=4)
+                    d.polygon([(682,y+78),(690,y+89),(698,y+78)],fill=YELLOW)
+        # Chalk tray and freestanding supports also work on the street/campus.
+        d.rectangle((310,1040,770,1060),fill="#B58C61",outline=INK,width=4)
+        d.rectangle((675,1031,715,1039),fill=chalk)
+        d.line((360,1060,335,1325),fill=INK,width=9)
+        d.line((720,1060,745,1325),fill=INK,width=9)
+        self.backgrounds[key]=panel
+        return panel
+
+    def teaching_props(self, scene):
+        lesson=scene.get("teaching",{"mode":"dialogue"})
+        if lesson["mode"]=="dialogue":
+            return None
+        key=("props",scene["index"])
+        if key in self.backgrounds:
+            return self.backgrounds[key]
+        layer=Image.new("RGBA",(W,H))
+        d=ImageDraw.Draw(layer)
+        if lesson["mode"]=="bone_model":
+            # Generic teaching prop, deliberately not a clinical anatomy diagram.
+            d.rectangle((350,1175,730,1220),fill="#D19B61",outline=INK,width=7)
+            d.line((380,1220,370,1415),fill=INK,width=12)
+            d.line((700,1220,710,1415),fill=INK,width=12)
+            d.ellipse((460,1130,620,1175),fill="#91A7A4",outline=INK,width=6)
+            d.line((540,1000,540,1150),fill=INK,width=8)
+            # An outline mask makes a single clean paper-cut bone silhouette.
+            shape=Image.new("L",(W,H))
+            sd=ImageDraw.Draw(shape)
+            sd.rounded_rectangle((518,854,562,1065),radius=18,fill=255)
+            for box in [(479,820,548,890),(535,821,604,891),
+                        (479,1030,548,1100),(535,1030,604,1100)]:
+                sd.ellipse(box,fill=255)
+            from PIL import ImageFilter
+            outline=shape.filter(ImageFilter.MaxFilter(13))
+            layer.paste(INK,(0,0,W,H),outline)
+            layer.paste("#F5EAD1",(0,0,W,H),shape)
+            d=ImageDraw.Draw(layer)
+            d.rounded_rectangle((380,1232,700,1285),radius=6,fill=PAPER,outline=INK,width=3)
+            self.text(d,(540,1236),"骨頭教具・示意",32,INK,"ma")
+        elif scene["speaker"]=="doctor":
+            # A pointer aligned with the existing hand, not an invented arm rig.
+            d.line((310,1210,480,895),fill=INK,width=11)
+            d.line((310,1210,480,895),fill="#B58C61",width=5)
+            d.ellipse((470,885,490,905),fill=YELLOW,outline=INK,width=3)
+        self.backgrounds[key]=layer
+        return layer
+
     def frame(self, scene, t, fps):
         im=self.background(scene)
+        lesson=scene.get("teaching",{"mode":"dialogue"})
+        panel=self.teaching_panel(scene)
+        if panel is not None:
+            im.paste(panel,(0,0),panel)
         local=t-scene["start"]
         speaking=scene["voice_start"] <= t < scene["voice_end"]
         pos=int(max(0,t-scene["voice_start"])*fps)
@@ -208,7 +296,7 @@ class Stage:
         focus=scene["speaker"] if shot=="punch" else shot
         # One locked scale for EVERY actor in EVERY board. Focus never shrinks
         # listeners or enlarges a speaker. Shared baseline keeps feet aligned.
-        positions=(-50,280,610) if len(cast)==3 else (20,550)
+        positions=(-50,280,610) if len(cast)==3 else ((-80,640) if lesson["mode"]!="dialogue" else (20,550))
         layout={name:(positions[i],660,780) for i,name in enumerate(cast)}
         # Compose in a masked stage to protect the subtitle safe area.
         stage=Image.new("RGBA",(W,H))
@@ -223,6 +311,9 @@ class Stage:
             oy=bounce if active and motion=="nod" else 0
             stage.alpha_composite(sprite,(x+ox,y+oy))
         im.paste(stage.crop((0,455,W,1470)),(0,455),stage.crop((0,455,W,1470)))
+        props=self.teaching_props(scene)
+        if props is not None:
+            im.paste(props,(0,0),props)
         d=ImageDraw.Draw(im)
         who=self.episode["names"][scene["speaker"]]
         d.rounded_rectangle((65,1490,390,1550),radius=8,fill=CORAL if scene["speaker"]!="doctor" else "#A4D1C6",outline=INK,width=3)

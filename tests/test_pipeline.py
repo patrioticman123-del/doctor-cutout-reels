@@ -92,11 +92,47 @@ class PipelineTests(unittest.TestCase):
             seen.append((name,sprite.size))
             return sprite
         stage.character_sprite=capture
-        for i,scene in enumerate(data["scenes"]):
+        scenes=data["scenes"]+[dict(data["scenes"][0],cast=["doctor","mei","alo"],teaching={"mode":"dialogue"})]
+        for i,scene in enumerate(scenes):
             item=dict(scene,index=i,start=0,end=5,voice_start=.18,voice_end=4.5,envelope=[0]*120)
             frame=stage.frame(item,2,24)
             self.assertEqual(frame.size,(1080,1920))
         self.assertEqual({size for _,size in seen},{(520,780)})
+
+    def test_teaching_material_is_visible_in_draft_and_invalidates_approval(self):
+        data=render.validate(self.episode)
+        stage=Stage(ROOT/"assets",data,find_font())
+        scene=copy.deepcopy(next(s for s in data["scenes"] if s["teaching"]["mode"]=="bone_model"))
+        scene.update(index=90,start=0,end=5,voice_start=.18,voice_end=4.5,envelope=[0]*120)
+        with_model=stage.frame(scene,2,24)
+        # Compare the actual center prop region against the identical scene with no lesson.
+        plain=dict(scene,index=91,teaching={"mode":"dialogue"})
+        no_model=stage.frame(plain,2,24)
+        from PIL import ImageChops
+        diff=ImageChops.difference(with_model.crop((400,820,680,1180)),
+                                   no_model.crop((400,820,680,1180)))
+        self.assertIsNotNone(diff.getbbox())
+        before=render.revision(data)
+        board=next(s for s in data["scenes"] if s["teaching"]["mode"]=="blackboard")
+        board["teaching"]["points"][0]="修訂後的重點"
+        self.assertNotEqual(render.revision(data),before)
+        with tempfile.TemporaryDirectory() as folder:
+            output=Path(folder)
+            render.draft(data,output,find_font())
+            self.assertIn("修訂後的重點",(output/"script.md").read_text(encoding="utf-8"))
+            self.assertFalse(list(output.glob("*.mp4")))
+            self.assertFalse((output/"audio").exists())
+
+    def test_teaching_props_reject_obscured_layout_and_unknown_modes(self):
+        data=render.validate(self.episode)
+        scene=next(s for s in data["scenes"] if s["teaching"]["mode"]=="bone_model")
+        scene["cast"]=["doctor","mei","alo"]
+        with self.assertRaises(ValueError):
+            render.validate(data)
+        scene["cast"]=["doctor","alo"]
+        scene["teaching"]["mode"]="unknown"
+        with self.assertRaises(ValueError):
+            render.validate(data)
 
     def test_files_backend_renders_decodable_av_with_measured_timing(self):
         # Synthetic tones are isolated fixtures, never presented as real speech.
