@@ -76,11 +76,34 @@ class PipelineTests(unittest.TestCase):
             self.assertFalse((output/"audio").exists())
             self.assertFalse(list(output.glob("*.wav")))
             self.assertFalse(list(output.glob("*.mp4")))
-            self.episode["scenes"][0]["text"]+="這是修改。"
+            self.episode["scenes"][0]["text"]+="這樣也可以嗎？"
             episode.write_text(json.dumps(self.episode,ensure_ascii=False),encoding="utf-8")
             result=subprocess.run(command+["--render","--approved-hash",manifest["revision"]],capture_output=True)
             self.assertNotEqual(result.returncode,0)
+            self.assertIn(b"Missing/stale approval hash",result.stderr)
             self.assertFalse((output/"audio").exists())
+
+    def test_question_dialogue_and_medical_closing_require_explicit_structure(self):
+        data=copy.deepcopy(self.episode)
+        first=data["scenes"][0]
+        first["intent"]="question"
+        first["text"]="如果從足部開始看呢。"
+        with self.assertRaises(ValueError):
+            render.validate(data)
+        first["text"]="如果從足部開始看呢？"
+        self.assertEqual(render.validate(data)["scenes"][0]["intent"],"question")
+        data["content_type"]="medical"
+        data["sources"]=[{"id":"source","title":"Source fixture","url":"https://example.org/",
+                          "accessed":"2026-11-22","supports":"Test fixture only"}]
+        first["claims"]=["source"]
+        self.assertEqual(render.validate(data)["scenes"][-1]["intent"],"closing")
+        data["scenes"][-1]["intent"]="reaction"
+        with self.assertRaises(ValueError):
+            render.validate(data)
+        data["scenes"][-1]["intent"]="closing"
+        data["scenes"][-1]["speaker"]="alo"
+        with self.assertRaises(ValueError):
+            render.validate(data)
 
     def test_same_actor_size_for_all_speakers_and_three_person_shot(self):
         data=render.validate(self.episode)

@@ -1,7 +1,7 @@
 {
   "status": "awaiting_user_review",
-  "revision": "ea56bb37448d4e18",
-  "estimated_duration": 49.02837209302326,
+  "revision": "3ca61ae56ad882e2",
+  "estimated_duration": 56.687441860465114,
   "target_duration": [
     30,
     60
@@ -18,25 +18,26 @@
         "doctor",
         "alo"
       ],
-      "text": "醫師！今天的健康課講什麼？我已經準備亂猜了！",
+      "text": "醫師，今天健康課要講什麼呢？我可以先猜猜看嗎？",
       "headline": "先猜，再找答案？",
       "beat": "hook",
       "shot": "alo",
       "setting": "classroom",
       "motion": "nod",
       "hold": 0.4,
-      "action": "教室黑板前，阿洛點頭搶話，醫師在旁聽。",
-      "reaction": "醫師維持冷面，等阿洛說完。",
+      "action": "阿洛舉手，用真正請教的疑問句發問；問完等待醫師回答。",
+      "reaction": "醫師下一幕先回應阿洛的問題，再帶到黑板。",
       "claims": [],
       "gesture": "question",
+      "intent": "question",
       "teaching": {
         "mode": "dialogue"
       },
       "index": 0,
       "start": 0,
-      "end": 5.696279069767442,
+      "end": 5.928837209302326,
       "voice_start": 0.18,
-      "voice_end": 5.296279069767442,
+      "voice_end": 5.528837209302326,
       "draft_pose": true
     },
     {
@@ -65,11 +66,12 @@
         ]
       },
       "gesture": "point",
+      "intent": "answer",
       "index": 1,
-      "start": 5.696279069767442,
-      "end": 12.090232558139535,
-      "voice_start": 5.876279069767442,
-      "voice_end": 11.690232558139535,
+      "start": 5.928837209302326,
+      "end": 12.322790697674419,
+      "voice_start": 6.108837209302326,
+      "voice_end": 11.922790697674419,
       "draft_pose": true
     },
     {
@@ -78,7 +80,7 @@
         "doctor",
         "mei"
       ],
-      "text": "也能放個骨頭模型嗎？讓學生看著教具，再問問題。",
+      "text": "也能放個骨頭模型嗎？讓學生看著教具，再問問題，好嗎？",
       "headline": "也可以用模型上課",
       "beat": "escalate",
       "shot": "mei",
@@ -89,14 +91,15 @@
       "reaction": "不把每一集固定成有人說錯、醫師糾正。",
       "claims": [],
       "gesture": "talk",
+      "intent": "question",
       "teaching": {
         "mode": "dialogue"
       },
       "index": 2,
-      "start": 12.090232558139535,
-      "end": 18.01906976744186,
-      "voice_start": 12.270232558139535,
-      "voice_end": 17.61906976744186,
+      "start": 12.322790697674419,
+      "end": 18.949302325581392,
+      "voice_start": 12.502790697674419,
+      "voice_end": 18.549302325581394,
       "draft_pose": true
     },
     {
@@ -123,11 +126,12 @@
         ]
       },
       "gesture": "present",
+      "intent": "answer",
       "index": 3,
-      "start": 18.01906976744186,
-      "end": 23.947906976744186,
-      "voice_start": 18.19906976744186,
-      "voice_end": 23.547906976744187,
+      "start": 18.949302325581392,
+      "end": 24.878139534883715,
+      "voice_start": 19.129302325581392,
+      "voice_end": 24.478139534883717,
       "draft_pose": true
     },
     {
@@ -136,7 +140,7 @@
         "doctor",
         "alo"
       ],
-      "text": "所以每次上課，都得把整個教室一起搬到街上嗎？",
+      "text": "所以換個主題，就要把整間教室搬到街上嗎？",
       "headline": "連教室都要搬出來？",
       "beat": "character",
       "shot": "alo",
@@ -147,14 +151,15 @@
       "reaction": "從教具示範轉成生活情境，用接話推進笑點。",
       "claims": [],
       "gesture": "question",
+      "intent": "question",
       "teaching": {
         "mode": "dialogue"
       },
       "index": 4,
-      "start": 23.947906976744186,
-      "end": 29.74418604651163,
-      "voice_start": 24.127906976744185,
-      "voice_end": 29.24418604651163,
+      "start": 24.878139534883715,
+      "end": 30.20930232558139,
+      "voice_start": 25.058139534883715,
+      "voice_end": 29.70930232558139,
       "draft_pose": true
     },
     {
@@ -182,11 +187,12 @@
         ]
       },
       "gesture": "present",
+      "intent": "answer",
       "index": 5,
-      "start": 29.74418604651163,
-      "end": 35.67302325581395,
-      "voice_start": 29.92418604651163,
-      "voice_end": 35.27302325581395,
+      "start": 30.20930232558139,
+      "end": 36.13813953488371,
+      "voice_start": 30.38930232558139,
+      "voice_end": 35.738139534883715,
       "draft_pose": true
     },
     {
@@ -214,11 +220,12 @@
         ]
       },
       "gesture": "point",
+      "intent": "answer",
       "index": 6,
-      "start": 35.67302325581395,
-      "end": 42.49953488372093,
-      "voice_start": 35.85302325581395,
-      "voice_end": 41.89953488372093,
+      "start": 36.13813953488371,
+      "end": 42.964651162790695,
+      "voice_start": 36.31813953488371,
+      "voice_end": 42.36465116279069,
       "draft_pose": true
     },
     {
@@ -227,25 +234,54 @@
         "doctor",
         "alo"
       ],
-      "text": "好！先讓你看分鏡，我才不會抱著骨頭模型演錯棚！",
-      "headline": "先審稿，才不會演錯棚",
-      "beat": "punch",
+      "text": "所以先看分鏡再拍嗎？如果還有問題，可以再問嗎？",
+      "headline": "有問題還能再問嗎？",
+      "beat": "dialogue",
       "shot": "punch",
       "setting": "classroom",
       "motion": "still",
       "hold": 1.0,
-      "action": "滿版教室雙人同框；阿洛說話時揮手，結束後收手留白。",
-      "reaction": "醫師在旁聽，停在分鏡審稿階段，等待使用者修改。",
+      "action": "阿洛自然舉手追問，以「嗎？」結尾，不在問題後接斷言。",
+      "reaction": "醫師接著回答，並用結論與個別評估提醒收尾。",
       "claims": [],
-      "gesture": "wave",
+      "gesture": "question",
+      "intent": "question",
       "teaching": {
         "mode": "dialogue"
       },
       "index": 7,
-      "start": 42.49953488372093,
-      "end": 49.02837209302326,
-      "voice_start": 42.67953488372093,
-      "voice_end": 48.02837209302326,
+      "start": 42.964651162790695,
+      "end": 49.49348837209302,
+      "voice_start": 43.144651162790694,
+      "voice_end": 48.49348837209302,
+      "draft_pose": true
+    },
+    {
+      "speaker": "doctor",
+      "cast": [
+        "doctor",
+        "alo"
+      ],
+      "text": "可以，再問清楚。實際狀況，還是建議請專業醫師評估。",
+      "headline": "問清楚，個別狀況交由專業評估",
+      "beat": "closing",
+      "intent": "closing",
+      "shot": "doctor",
+      "setting": "classroom",
+      "motion": "still",
+      "gesture": "present",
+      "hold": 1.2,
+      "action": "醫師先回答學生，再以專業評估提醒收束；提醒會完整配音與上字幕。",
+      "reaction": "阿洛聽完，結尾保留停頓，不再接笑話蓋過結論。",
+      "claims": [],
+      "teaching": {
+        "mode": "dialogue"
+      },
+      "index": 8,
+      "start": 49.49348837209302,
+      "end": 56.687441860465114,
+      "voice_start": 49.67348837209302,
+      "voice_end": 55.48744186046511,
       "draft_pose": true
     }
   ]

@@ -18,6 +18,7 @@ from visuals import Stage, chunks, find_font, fit, TEACHING_LABELS, GESTURE_LABE
 
 ROOT = Path(__file__).resolve().parents[1]
 ASPECT_RATIO = "9:16"
+INTENT_LABELS = {"question":"提問", "answer":"回答", "statement":"陳述", "reaction":"反應", "closing":"結論"}
 
 
 def video_size(width=1080):
@@ -91,6 +92,11 @@ def validate(data):
         for field,limit in (("text",140),("headline",26),("beat",40)):
             if not isinstance(scene.get(field),str) or not 1 <= len(scene[field].strip()) <= limit:
                 raise ValueError(f"Scene {i+1}: {field} must have 1–{limit} characters")
+        scene.setdefault("intent","question" if scene["text"].rstrip().endswith(("？","?")) else "statement")
+        if scene["intent"] not in INTENT_LABELS:
+            raise ValueError(f"Scene {i+1}: invalid dialogue intent")
+        if scene["intent"]=="question" and not scene["text"].rstrip().endswith(("？","?")):
+            raise ValueError(f"Scene {i+1}: question dialogue must end with a question mark; rewrite it as a natural question")
         if scene.get("speaker") not in DEFAULT_VOICES:
             raise ValueError(f"Scene {i+1}: invalid speaker")
         if scene.get("shot") not in ("wide","doctor","alo","mei","punch"):
@@ -135,6 +141,8 @@ def validate(data):
         claim_count+=len(claims)
     if kind == "medical" and (not sources or not claim_count):
         raise ValueError("Medical episodes require sources and scene-level claims references")
+    if kind=="medical" and (scenes[-1]["speaker"]!="doctor" or scenes[-1]["intent"]!="closing"):
+        raise ValueError("Medical episodes must end with a doctor closing scene: summarize the topic and an appropriate individual-assessment reminder")
     if sum(s["speaker"]!="narrator" for s in scenes)/len(scenes)<.75:
         raise ValueError("At least 75% of scenes must be character dialogue")
     return data
@@ -183,10 +191,11 @@ def draft(episode,out,font_path):
                     "punch":"固定尺度・笑點留白"}[scene["shot"]]
         beat_label={"hook":"開場衝突","turn":"轉折","escalate":"誤解升級","explain":"釐清",
                     "character":"角色接話","dialogue":"追問","workflow":"製作流程",
-                    "punch":"笑點","cta":"行動"}.get(scene["beat"],scene["beat"])
+                    "punch":"笑點","cta":"行動","closing":"重點與評估提醒"}.get(scene["beat"],scene["beat"])
         cast="、".join(episode["names"][c] for c in scene["cast"])
         rows += [f"## {i+1:02} · {setting} · {beat_label} · 約 {end-cursor:.1f} 秒\n",
                  f"角色：{cast}｜鏡頭：{shot_label}\n",
+                 f"對話功能：{INTENT_LABELS[scene['intent']]}\n",
                  f"**{name}：** {scene['text']}\n",f"動作：{scene['action']}\n",
                  f"接話／反應：{scene['reaction']}\n",f"字卡：{scene['headline']}\n",
                  f"演法：{TEACHING_LABELS[scene['teaching']['mode']]}\n",
@@ -196,7 +205,7 @@ def draft(episode,out,font_path):
         teaching_label=TEACHING_LABELS[scene["teaching"]["mode"]]
         if scene["teaching"]["mode"]!="dialogue":
             rows.append(f"教具內容：{scene['teaching']['title']}；{'／'.join(scene['teaching']['points'])}\n")
-        cards.append(f'<article><img src="{image_name}" alt="分鏡 {i+1}"><div><small>{i+1:02} · {setting} · {esc(teaching_label)} · {end-cursor:.1f}s（估）</small><h2>{esc(scene["headline"])}</h2><p><b>{esc(name)}：</b>{esc(scene["text"])}</p><p>動作：{esc(scene["action"])}</p><p>反應：{esc(scene["reaction"])}</p><p>鏡頭：{esc(shot_label)} · 來源：{esc(", ".join(scene["claims"]) or "無臨床說法")}</p></div></article>')
+        cards.append(f'<article><img src="{image_name}" alt="分鏡 {i+1}"><div><small>{i+1:02} · {setting} · {esc(teaching_label)} · {esc(INTENT_LABELS[scene["intent"]])} · {end-cursor:.1f}s（估）</small><h2>{esc(scene["headline"])}</h2><p><b>{esc(name)}：</b>{esc(scene["text"])}</p><p>動作：{esc(scene["action"])}</p><p>反應：{esc(scene["reaction"])}</p><p>鏡頭：{esc(shot_label)} · 來源：{esc(", ".join(scene["claims"]) or "無臨床說法")}</p></div></article>')
         timeline.append({k:v for k,v in item.items() if k!="envelope"})
         cursor=end
     sheet=Image.new("RGB",(810,480*math.ceil(len(thumbnails)/3)),"#FFF9ED")

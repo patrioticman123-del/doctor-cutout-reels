@@ -21,6 +21,7 @@
 - `speaker`：doctor / alo / mei / narrator。至少 75% 幕是人物對話。
 - `cast`：同框角色 ID 陣列，2–3 人，限 doctor/alo/mei；發言者必須出鏡。學生不等同成人患者。
 - `text`：完整配音；`headline`：審稿標題最多 26 字，顯示於分鏡網頁而不燒在影片頂部；`beat`：故事功能。
+- `intent`：question 提問／answer 回答／statement 陳述／reaction 反應／closing 結論。提問的 `text` 必須以「？／?」結尾，使用合適的「嗎／呢」等句型，避免標記提問但台詞像陳述。未填時僅按句尾問號推定 question 或 statement。醫療片最後一幕須由 doctor 以 closing 收束本集重點與合適的個別評估提醒；程式只檢查標記及角色，語意與臨床正確性仍須人工／AI 審稿。
 - `setting`：classroom 教室／schoolyard 小學校園／street 街道。
 - `shot`：wide / doctor / alo / mei / punch，記錄對話焦點。**現成引擎鎖定人物尺寸與腳底基準，不因 shot 放大發言者或縮小聽者。** 全身畫面固定尺度，對話焦點以標示、嘴型和小動作表達。
 - `motion`：nod 上下點頭／shake 左右搖頭／still 靜止；`hold`：句後停頓 0.1–2 秒。

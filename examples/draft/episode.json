@@ -36,17 +36,18 @@
         "doctor",
         "alo"
       ],
-      "text": "醫師！今天的健康課講什麼？我已經準備亂猜了！",
+      "text": "醫師，今天健康課要講什麼呢？我可以先猜猜看嗎？",
       "headline": "先猜，再找答案？",
       "beat": "hook",
       "shot": "alo",
       "setting": "classroom",
       "motion": "nod",
       "hold": 0.4,
-      "action": "教室黑板前，阿洛點頭搶話，醫師在旁聽。",
-      "reaction": "醫師維持冷面，等阿洛說完。",
+      "action": "阿洛舉手，用真正請教的疑問句發問；問完等待醫師回答。",
+      "reaction": "醫師下一幕先回應阿洛的問題，再帶到黑板。",
       "claims": [],
       "gesture": "question",
+      "intent": "question",
       "teaching": {
         "mode": "dialogue"
       }
@@ -76,7 +77,8 @@
           "讓角色接話"
         ]
       },
-      "gesture": "point"
+      "gesture": "point",
+      "intent": "answer"
     },
     {
       "speaker": "mei",
@@ -84,7 +86,7 @@
         "doctor",
         "mei"
       ],
-      "text": "也能放個骨頭模型嗎？讓學生看著教具，再問問題。",
+      "text": "也能放個骨頭模型嗎？讓學生看著教具，再問問題，好嗎？",
       "headline": "也可以用模型上課",
       "beat": "escalate",
       "shot": "mei",
@@ -95,6 +97,7 @@
       "reaction": "不把每一集固定成有人說錯、醫師糾正。",
       "claims": [],
       "gesture": "talk",
+      "intent": "question",
       "teaching": {
         "mode": "dialogue"
       }
@@ -122,7 +125,8 @@
           "骨頭模型：通用示意"
         ]
       },
-      "gesture": "present"
+      "gesture": "present",
+      "intent": "answer"
     },
     {
       "speaker": "alo",
@@ -130,7 +134,7 @@
         "doctor",
         "alo"
       ],
-      "text": "所以每次上課，都得把整個教室一起搬到街上嗎？",
+      "text": "所以換個主題，就要把整間教室搬到街上嗎？",
       "headline": "連教室都要搬出來？",
       "beat": "character",
       "shot": "alo",
@@ -141,6 +145,7 @@
       "reaction": "從教具示範轉成生活情境，用接話推進笑點。",
       "claims": [],
       "gesture": "question",
+      "intent": "question",
       "teaching": {
         "mode": "dialogue"
       }
@@ -169,7 +174,8 @@
           "模型引出觀察"
         ]
       },
-      "gesture": "present"
+      "gesture": "present",
+      "intent": "answer"
     },
     {
       "speaker": "doctor",
@@ -195,7 +201,8 @@
           "直接開拍"
         ]
       },
-      "gesture": "point"
+      "gesture": "point",
+      "intent": "answer"
     },
     {
       "speaker": "alo",
@@ -203,17 +210,40 @@
         "doctor",
         "alo"
       ],
-      "text": "好！先讓你看分鏡，我才不會抱著骨頭模型演錯棚！",
-      "headline": "先審稿，才不會演錯棚",
-      "beat": "punch",
+      "text": "所以先看分鏡再拍嗎？如果還有問題，可以再問嗎？",
+      "headline": "有問題還能再問嗎？",
+      "beat": "dialogue",
       "shot": "punch",
       "setting": "classroom",
       "motion": "still",
       "hold": 1.0,
-      "action": "滿版教室雙人同框；阿洛說話時揮手，結束後收手留白。",
-      "reaction": "醫師在旁聽，停在分鏡審稿階段，等待使用者修改。",
+      "action": "阿洛自然舉手追問，以「嗎？」結尾，不在問題後接斷言。",
+      "reaction": "醫師接著回答，並用結論與個別評估提醒收尾。",
       "claims": [],
-      "gesture": "wave",
+      "gesture": "question",
+      "intent": "question",
+      "teaching": {
+        "mode": "dialogue"
+      }
+    },
+    {
+      "speaker": "doctor",
+      "cast": [
+        "doctor",
+        "alo"
+      ],
+      "text": "可以，再問清楚。實際狀況，還是建議請專業醫師評估。",
+      "headline": "問清楚，個別狀況交由專業評估",
+      "beat": "closing",
+      "intent": "closing",
+      "shot": "doctor",
+      "setting": "classroom",
+      "motion": "still",
+      "gesture": "present",
+      "hold": 1.2,
+      "action": "醫師先回答學生，再以專業評估提醒收束；提醒會完整配音與上字幕。",
+      "reaction": "阿洛聽完，結尾保留停頓，不再接笑話蓋過結論。",
+      "claims": [],
       "teaching": {
         "mode": "dialogue"
       }
