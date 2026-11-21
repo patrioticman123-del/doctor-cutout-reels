@@ -148,6 +148,32 @@ class PipelineTests(unittest.TestCase):
             self.assertIsNone(ImageChops.difference(rest.crop((0,620,rest.width,780)),
                                                   point.crop((0,620,point.width,780))).getbbox())
 
+    def test_articulated_arms_keep_lengths_and_connected_sleeves(self):
+        from arms import arm_pose
+        stage=Stage(ROOT/"assets",render.validate(self.episode),find_font())
+        for name in ("doctor","alo","mei"):
+            rig=stage.rigs[name]
+            for direction in (-1,1):
+                for gesture in ("talk","point","present","question","wave"):
+                    for phase in range(6):
+                        pose=arm_pose(rig,stage.characters[name].size,780,gesture,phase,direction)
+                        self.assertAlmostEqual(math.dist(pose["shoulder"],pose["elbow"]),pose["upper_length"],places=6)
+                        self.assertAlmostEqual(math.dist(pose["elbow"],pose["wrist"]),pose["lower_length"],places=6)
+                        bend=abs(pose["upper_angle"]-pose["fore_angle"])
+                        self.assertTrue(20<=bend<=140)
+                    if gesture not in ("point","question","present"):
+                        continue
+                    sprite=stage.character_sprite(name,780,0,0,gesture=gesture,phase=2,direction=direction)
+                    pose=arm_pose(rig,stage.characters[name].size,780,gesture,2,direction)
+                    pad=stage.character_parts(name,780)[2]
+                    for start,end in ((pose["shoulder"],pose["elbow"]),(pose["elbow"],pose["wrist"]),(pose["wrist"],pose["hand"])):
+                        for k in range(11):
+                            fraction=k/10
+                            x=round(pad+start[0]+(end[0]-start[0])*fraction)
+                            y=round(start[1]+(end[1]-start[1])*fraction)
+                            self.assertGreaterEqual(sprite.getpixel((x,y))[3],240,
+                                                    f"Disconnected {name}/{gesture}/{direction} at {(x,y)}")
+
     def test_teaching_material_is_visible_in_draft_and_invalidates_approval(self):
         data=render.validate(self.episode)
         stage=Stage(ROOT/"assets",data,find_font())

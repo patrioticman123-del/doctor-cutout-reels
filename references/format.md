@@ -24,7 +24,7 @@
 - `setting`：classroom 教室／schoolyard 小學校園／street 街道。
 - `shot`：wide / doctor / alo / mei / punch，記錄對話焦點。**現成引擎鎖定人物尺寸與腳底基準，不因 shot 放大發言者或縮小聽者。** 全身畫面固定尺度，對話焦點以標示、嘴型和小動作表達。
 - `motion`：nod 上下點頭／shake 左右搖頭／still 靜止；`hold`：句後停頓 0.1–2 秒。
-- `gesture`：auto（依角色與教具選擇）／rest／talk 擺手／point 指黑板／present 攤手／question 舉手提問／wave 揮手。以原角色袖子與手掌分層、肩關節旋轉，朝同框內側動作，保留身體尺度與原來服裝；配音期間手臂循環變換，停頓後放鬆，講解指示棒跟隨手掌。靜態分鏡會顯示代表姿勢；不因看到張嘴就代表已生成配音。
+- `gesture`：auto（依角色與教具選擇）／rest／talk 擺手／point 指黑板／present 攤手／question 舉手提問／wave 揮手。手部以兩節固定長度的骨架計算肩、肘、腕位置，衣袖以連續輪廓繪製，手掌與袖口重疊接合；保留自然肘彎，避免整片斜切袖子旋轉露出缺口。朝同框內側動作，身體尺度保持固定；配音期間動作循環、停頓後放鬆，指示棒跟隨握持位置。`assets/cast.json` 的 `shoulder`、`arm_lengths`、`torso_edge`、袖色與膚色控制各角色接合。靜態分鏡只顯示代表姿勢，尚未配音。
 - `action`、`reaction`：供審稿的表演與接話說明，必填。只描述引擎支援的動作；更複雜動作先擴充並重新審稿。
 - `claims`：來源 ID 陣列。純劇情可空；醫療說法須對應來源。
 - `audio`：選填，以本 JSON 所在目錄為基準的錄音路徑，files 模式每幕必填。

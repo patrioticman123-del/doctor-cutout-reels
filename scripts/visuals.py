@@ -29,25 +29,6 @@ def resolved_gesture(scene):
     return "question" if scene["speaker"]=="alo" else "talk"
 
 
-def gesture_angles(gesture,phase,direction=1):
-    wave=math.sin(phase*math.tau/6)
-    if gesture=="talk":
-        left,right=0,14+12*wave
-    elif gesture=="point":
-        left,right=0,60+5*wave
-    elif gesture=="present":
-        left,right=0,45+8*wave
-    elif gesture=="question":
-        left,right=0,85+8*wave
-    elif gesture=="wave":
-        left,right=0,100+12*wave
-    else:
-        left,right=0,0
-    if direction<0:
-        left,right=-right,-left
-    return round(left/5)*5,round(right/5)*5
-
-
 def find_font(explicit=None):
     paths = [explicit] if explicit else []
     paths += [os.environ.get("CJK_FONT"), "C:/Windows/Fonts/msjhbd.ttc",
@@ -147,7 +128,7 @@ class Stage:
         return self.backgrounds[key].copy()
 
     def character_parts(self,name,height):
-        """Hinge the existing cut-paper sleeves/hands; retain the original body scale."""
+        """Clean only the active arm; keep the head, torso and idle arm intact."""
         key=(name,height)
         if key in self.arm_layers:
             return self.arm_layers[key]
@@ -155,52 +136,37 @@ class Stage:
         source=self.characters[name]
         rig=self.rigs[name]
         iw,ih=source.size
-        sx,sy=rig["shoulder"]
-        top,end=rig["arm_start"],rig["arm_end"]
-        polygon=[(sx+.015,top),(.335,top+.08),(.327,.58),(.307,.655),
-                 (.305,end),(.08,end),(.08,top)]
-        masks=[]
-        for side in (0,1):
-            mask=Image.new("L",source.size)
-            ImageDraw.Draw(mask).polygon([(round((1-x if side else x)*iw),round(y*ih))
-                                         for x,y in polygon],fill=255)
-            masks.append(mask)
-        alpha=source.getchannel("A")
-        body=source.copy()
-        body.putalpha(ImageChops.multiply(alpha,ImageOps.invert(ImageChops.lighter(*masks))))
-        pieces=[body]
-        for mask in masks:
-            limb=source.copy()
-            limb.putalpha(ImageChops.multiply(alpha,mask))
-            pieces.append(limb)
         pad=180
-        size=(round((iw+2*pad)*height/ih),height)
-        padded=[]
-        for piece in pieces:
-            layer=Image.new("RGBA",(iw+2*pad,ih))
-            layer.alpha_composite(piece,(pad,0))
-            padded.append(layer.resize(size,Image.Resampling.LANCZOS))
         scale=height/ih
-        pivots=[((pad+sx*iw)*scale,sy*ih*scale),
-                ((pad+(1-sx)*iw)*scale,sy*ih*scale)]
-        value=(padded,pivots,round(pad*scale))
+        size=(round((iw+2*pad)*scale),height)
+        bodies={}
+        for side in (None,0,1):
+            body=source.copy()
+            if side is not None:
+                path=rig["torso_edge"]
+                polygon=path+[(0,rig["arm_end"]),(0,path[0][1])]
+                mask=Image.new("L",source.size)
+                ImageDraw.Draw(mask).polygon([(round((1-x if side else x)*iw),round(y*ih))
+                                             for x,y in polygon],fill=255)
+                body.putalpha(ImageChops.multiply(source.getchannel("A"),ImageOps.invert(mask)))
+            layer=Image.new("RGBA",(iw+2*pad,ih))
+            layer.alpha_composite(body,(pad,0))
+            bodies[side]=layer.resize(size,Image.Resampling.LANCZOS)
+            if side is not None:
+                # Rejoin the surviving coat/shirt outline below the shoulder.
+                edge=[(round((pad+(1-x if side else x)*iw)*scale),round(y*height))
+                      for x,y in rig["torso_edge"]]
+                ImageDraw.Draw(bodies[side]).line(edge,fill=INK,width=4,joint="curve")
+        value=(bodies,None,round(pad*scale))
         self.arm_layers[key]=value
         return value
 
     def hand_anchor(self,name,height,gesture,phase,direction):
-        rig=self.rigs[name]
-        iw,ih=self.characters[name].size
-        sx,sy=rig["shoulder"]
-        hx,hy=rig["hand"]
-        side=1 if direction>0 else 0
-        px=(1-sx if side else sx)*iw
-        py=sy*ih
-        x=(1-hx if side else hx)*iw
-        y=hy*ih
-        angle=math.radians(gesture_angles(gesture,phase,direction)[side])
-        dx,dy=x-px,y-py
-        return ((px+dx*math.cos(angle)+dy*math.sin(angle))*height/ih,
-                (py-dx*math.sin(angle)+dy*math.cos(angle))*height/ih)
+        from arms import arm_pose
+        pose=arm_pose(self.rigs[name],self.characters[name].size,height,gesture,phase,direction)
+        if pose is None:
+            raise ValueError("A pointer needs an active arm pose")
+        return pose["hand"]
 
     def character_sprite(self, name, height, mouth, blink, gesture="rest", phase=0, direction=1):
         if gesture=="rest":
@@ -208,12 +174,13 @@ class Stage:
         key = (name, height, mouth, blink, gesture, phase, direction)
         if key in self.sprites:
             return self.sprites[key]
-        pieces,pivots,pad=self.character_parts(name,height)
-        image=pieces[0].copy()
-        for arm,pivot,angle in zip(pieces[1:],pivots,gesture_angles(gesture,phase,direction)):
-            image.alpha_composite(arm.rotate(angle,resample=Image.Resampling.BICUBIC,center=pivot)
-                                  if angle else arm)
-        rig = self.rigs[name]
+        from arms import arm_pose, draw_arm
+        bodies,_,pad=self.character_parts(name,height)
+        rig=self.rigs[name]
+        pose=arm_pose(rig,self.characters[name].size,height,gesture,phase,direction)
+        image=bodies[None if pose is None else pose["side"]].copy()
+        if pose is not None:
+            draw_arm(image,pose,rig,height,pad)
         draw = ImageDraw.Draw(image)
         iw,ih=self.characters[name].size
         scale=height/ih
