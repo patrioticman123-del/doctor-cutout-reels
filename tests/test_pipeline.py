@@ -60,6 +60,47 @@ class PipelineTests(unittest.TestCase):
             self.assertGreater(max(second),max(first))
             self.assertEqual(len(list(cache.glob("*.wav"))),2)
 
+    def test_brisk_audio_trims_edges_preserves_pitch_and_refreshes_cache(self):
+        with tempfile.TemporaryDirectory() as folder:
+            base=Path(folder)
+            cache=base/"cache"
+            cache.mkdir()
+            tone=[int(6000*math.sin(i*2*math.pi*220/audio.RATE)) for i in range(2*audio.RATE)]
+            audio.write_wav(base/"voice.wav",[0]*(audio.RATE//4)+tone+[0]*(audio.RATE//4))
+            scene=dict(self.episode["scenes"][0],audio="voice.wav")
+            ffmpeg=imageio_ffmpeg.get_ffmpeg_exe()
+            episode=copy.deepcopy(self.episode)
+            episode["pacing"]={"speech_speed":1.0,"lead_in":.03,"trim_silence":False}
+            original=audio.speech(scene,episode,"files",base,cache,ffmpeg)
+            self.assertAlmostEqual(len(original)/audio.RATE,2.5,places=3)
+            episode["pacing"]={"speech_speed":1.08,"lead_in":.03,"trim_silence":True}
+            brisk=audio.speech(scene,episode,"files",base,cache,ffmpeg)
+            self.assertTrue(1.84<len(brisk)/audio.RATE<1.97)
+            middle=brisk[audio.RATE//10:-audio.RATE//10]
+            positive_crossings=sum(a<=0<b for a,b in zip(middle,middle[1:]))
+            frequency=positive_crossings/(len(middle)/audio.RATE)
+            self.assertAlmostEqual(frequency,220,delta=4)
+            episode["pacing"]["speech_speed"]=1.16
+            faster=audio.speech(scene,episode,"files",base,cache,ffmpeg)
+            self.assertLess(len(faster),len(brisk))
+            self.assertEqual(len(list(cache.glob("*.wav"))),3)
+
+    def test_brisk_assembly_uses_short_gaps_and_keeps_utterances_separate(self):
+        with tempfile.TemporaryDirectory() as folder:
+            base=Path(folder)
+            audio.write_wav(base/"voice.wav",(5000*math.sin(i*2*math.pi*220/audio.RATE)
+                                              for i in range(audio.RATE)))
+            episode=copy.deepcopy(self.episode)
+            episode["scenes"]=episode["scenes"][:2]
+            for scene in episode["scenes"]:
+                scene.update(audio="voice.wav",hold=.1)
+            timeline,duration=audio.assemble(episode,"files",base,base,imageio_ffmpeg.get_ffmpeg_exe(),24)
+            gap=timeline[1]["voice_start"]-timeline[0]["voice_end"]
+            self.assertTrue(.13<=gap<.18)
+            self.assertGreaterEqual(timeline[1]["voice_start"],timeline[0]["voice_end"])
+            self.assertAlmostEqual(timeline[0]["voice_start"],.03)
+            self.assertGreaterEqual(duration,timeline[-1]["voice_end"])
+
     def test_default_cli_is_draft_only_and_stale_approval_is_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             base=Path(folder)
@@ -240,6 +281,7 @@ class PipelineTests(unittest.TestCase):
                                                for i in range(16*audio.RATE)))
             episode=copy.deepcopy(self.episode)
             episode["scenes"]=episode["scenes"][:2]
+            episode["pacing"]={"speech_speed":1.0,"lead_in":.03,"trim_silence":False}
             for scene in episode["scenes"]:
                 scene["audio"]="fixture.wav"
             data=render.validate(episode)

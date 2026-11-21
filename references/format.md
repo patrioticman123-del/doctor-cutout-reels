@@ -13,6 +13,7 @@
 | `names` | doctor/alo/mei/narrator 的顯示名稱，各最多 8 字 |
 | `footer` | 保留資料，最多 28 字；不另畫底部白色文字區 |
 | `voices` | doctor/alo/mei/narrator 各含 edge 與 sapi 聲音名稱 |
+| `pacing` | 預設 `{"speech_speed":1.08,"lead_in":0.03,"trim_silence":true}`：原語速再快 8%、縮短每幕前空白、裁掉音檔首尾多餘靜音 |
 | `sources` | id/title/url/accessed（YYYY-MM-DD）/supports |
 | `scenes` | 2–14 幕，30–60 秒通常用 7–12 幕 |
 
@@ -24,7 +25,7 @@
 - `intent`：question 提問／answer 回答／statement 陳述／reaction 反應／closing 結論。提問的 `text` 必須以「？／?」結尾，使用合適的「嗎／呢」等句型，避免標記提問但台詞像陳述。未填時僅按句尾問號推定 question 或 statement。醫療片最後一幕須由 doctor 以 closing 收束本集重點與合適的個別評估提醒；程式只檢查標記及角色，語意與臨床正確性仍須人工／AI 審稿。
 - `setting`：classroom 教室／schoolyard 小學校園／street 街道。
 - `shot`：wide / doctor / alo / mei / punch，記錄對話焦點。**現成引擎鎖定人物尺寸與腳底基準，不因 shot 放大發言者或縮小聽者。** 全身畫面固定尺度，對話焦點以標示、嘴型和小動作表達。
-- `motion`：nod 上下點頭／shake 左右搖頭／still 靜止；`hold`：句後停頓 0.1–2 秒。
+- `motion`：nod 上下點頭／shake 左右搖頭／still 靜止；`hold`：句後停頓。預設普通句 0.10 秒、question 0.12 秒、punch 0.25 秒、closing 0.50 秒。允許 0.04–2 秒供特殊需求覆寫，但普通接話不沿用舊版 0.4–1.2 秒的長停頓；長停頓須在審稿中交代用途。
 - `gesture`：auto（依角色與教具選擇）／rest／talk 擺手／point 指黑板／present 攤手／question 舉手提問／wave 揮手。手部以兩節固定長度的骨架計算肩、肘、腕位置，衣袖以連續輪廓繪製，手掌與袖口重疊接合；保留自然肘彎，避免整片斜切袖子旋轉露出缺口。朝同框內側動作，身體尺度保持固定；配音期間動作循環、停頓後放鬆，指示棒跟隨握持位置。`assets/cast.json` 的 `shoulder`、`arm_lengths`、`torso_edge`、袖色與膚色控制各角色接合。靜態分鏡只顯示代表姿勢，尚未配音。
 - `action`、`reaction`：供審稿的表演與接話說明，必填。只描述引擎支援的動作；更複雜動作先擴充並重新審稿。
 - `claims`：來源 ID 陣列。純劇情可空；醫療說法須對應來源。
@@ -61,6 +62,8 @@ python scripts/render.py episode.json --out build/my-episode --render --approved
 - files 接任何 ffmpeg 能解碼的音檔，轉成 24 kHz mono PCM16。程式不做語音辨識，須自行確認錄音與 text 一致。
 
 音訊快取按台詞、聲音設定與輸入音檔內容雜湊；修改後不會誤用舊配音。實測時長不在 30–60 秒就報錯，保留快取供修稿。原創程序配樂會降低人聲期間音量，punch 停頓留白。
+
+`pacing.speech_speed` 是在各角色既有 TTS 設定之後的速度倍率（0.8–1.3，預設 1.08），用 atempo 調節並保留音高；自備音檔也套用。`lead_in` 為每幕前空白（0–0.2 秒，預設 0.03）。`trim_silence` 只裁首尾，並各留約 25ms 的邊緣，不硬切句中停頓。若要保留自備錄音原速度與首尾，可設 speed 1.0、trim_silence false。這些設定會進入配音快取指紋與分鏡版本，修改後不沿用舊語速音檔；語音與鏡頭按處理後實際音長重新排列。速度使片長不足 30 秒時應補有用內容並重新審稿，不能加入長靜音湊片長。
 
 ## 輸出
 

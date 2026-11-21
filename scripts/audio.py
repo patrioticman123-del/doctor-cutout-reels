@@ -12,6 +12,44 @@ import sys
 import wave
 
 RATE = 24000
+DEFAULT_PACING = {"speech_speed":1.08,"lead_in":0.03,"trim_silence":True}
+
+
+def pacing_settings(episode):
+    settings=episode.get("pacing",{})
+    if not isinstance(settings,dict) or any(key not in DEFAULT_PACING for key in settings):
+        raise ValueError("pacing accepts speech_speed, lead_in and trim_silence")
+    result={**DEFAULT_PACING,**settings}
+    for key,low,high in (("speech_speed",.8,1.3),("lead_in",0,.2)):
+        value=result[key]
+        if isinstance(value,bool) or not isinstance(value,(int,float)) or not math.isfinite(value) or not low<=value<=high:
+            raise ValueError(f"pacing.{key} must be {low}–{high}")
+    if not isinstance(result["trim_silence"],bool):
+        raise ValueError("pacing.trim_silence must be true or false")
+    return result
+
+
+def default_hold(scene):
+    if scene.get("intent")=="closing":
+        return .5
+    if scene.get("beat")=="punch":
+        return .25
+    return .12 if scene.get("intent")=="question" else .1
+
+
+def trim_edges(samples):
+    """Remove only leading/trailing quiet, retaining breath/consonant margins."""
+    peak=max((abs(v) for v in samples),default=0)
+    threshold=max(45,peak*.004)
+    block=RATE//100
+    voiced=[i for i in range(0,len(samples),block)
+            if max((abs(v) for v in samples[i:i+block]),default=0)>=threshold]
+    if not voiced:
+        raise ValueError("Speech audio is silent after processing")
+    keep=round(RATE*.025)
+    start=max(0,voiced[0]-keep)
+    end=min(len(samples),voiced[-1]+block+keep)
+    return samples[start:end]
 
 
 def command(args):
@@ -46,7 +84,11 @@ def write_wav(path, values):
 def speech(scene, episode, backend, source_dir, audio_dir, ffmpeg):
     speaker = scene["speaker"]
     voice = episode["voices"][speaker].get(backend, "")
-    fingerprint = {"text": scene["text"], "voice": voice, "backend": backend, "v": 2}
+    pacing=pacing_settings(episode)
+    provider_rate=None if backend=="files" else ((1 if speaker=="alo" else 0) if backend=="sapi" else ("+8%" if speaker=="alo" else "+0%"))
+    fingerprint = {"text": scene["text"], "voice": voice, "backend": backend,
+                   "provider_rate":provider_rate,"speech_speed":pacing["speech_speed"],
+                   "trim_silence":pacing["trim_silence"],"v":3}
     source = None
     if backend == "files":
         if not scene.get("audio"):
@@ -63,7 +105,7 @@ def speech(scene, episode, backend, source_dir, audio_dir, ffmpeg):
         request = audio_dir / f"{key}.json"
         request.write_text(json.dumps({"text": scene["text"], "voice": voice,
                                       "out": str(wav.with_suffix('.raw.wav').resolve()),
-                                      "rate": 1 if speaker == "alo" else 0}, ensure_ascii=False),
+                                      "rate": provider_rate}, ensure_ascii=False),
                            encoding="utf-8")
         command([shutil.which("pwsh") or "powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
                  "-File", Path(__file__).with_name("speak.ps1"), request.resolve()])
@@ -73,16 +115,22 @@ def speech(scene, episode, backend, source_dir, audio_dir, ffmpeg):
         source = wav.with_suffix(".mp3")
         async def synthesize():
             await edge_tts.Communicate(scene["text"], voice,
-                                       rate="+8%" if speaker == "alo" else "+0%").save(str(source))
+                                       rate=provider_rate).save(str(source))
         try:
             asyncio.run(synthesize())
         except Exception as exc:
             raise RuntimeError(f"Edge TTS failed for {speaker}: {exc}. Retry or select --voice sapi/files.") from exc
     elif backend != "files":
         raise ValueError(f"Unknown speech backend: {backend}")
-    command([ffmpeg, "-y", "-v", "error", "-i", source, "-ac", "1", "-ar", str(RATE),
+    tempo=[] if pacing["speech_speed"]==1 else ["-af",f"atempo={pacing['speech_speed']}"]
+    command([ffmpeg, "-y", "-v", "error", "-i", source, *tempo,
+             "-ac", "1", "-ar", str(RATE),
              "-c:a", "pcm_s16le", wav])
-    return read_wav(wav)
+    samples=read_wav(wav)
+    if pacing["trim_silence"]:
+        samples=trim_edges(samples)
+        write_wav(wav,samples)
+    return samples
 
 
 def normalize(samples):
@@ -133,6 +181,7 @@ def score(duration, timeline):
 
 
 def assemble(episode, backend, source_dir, out, ffmpeg, fps):
+    pacing=pacing_settings(episode)
     folder = out / "audio"
     folder.mkdir(parents=True, exist_ok=True)
     timeline, segments, cursor = [], [], 0.0
@@ -140,9 +189,11 @@ def assemble(episode, backend, source_dir, out, ffmpeg, fps):
         print(f"Speech {index+1}/{len(episode['scenes'])}: {scene['speaker']}", flush=True)
         samples = normalize(speech(scene, episode, backend, source_dir, folder, ffmpeg))
         length = len(samples) / RATE
-        end = math.ceil((cursor + .18 + length + scene["hold"]) * fps) / fps
-        item = dict(scene, start=cursor, end=end, voice_start=cursor+.18,
-                    voice_end=cursor+.18+length, envelope=envelope(samples, fps), index=index)
+        lead=pacing["lead_in"]
+        hold=scene.get("hold",default_hold(scene))
+        end = math.ceil((cursor + lead + length + hold) * fps) / fps
+        item = dict(scene, hold=hold,start=cursor, end=end, voice_start=cursor+lead,
+                    voice_end=cursor+lead+length, envelope=envelope(samples, fps), index=index)
         timeline.append(item)
         segments.append((round(item["voice_start"]*RATE), samples))
         cursor = end

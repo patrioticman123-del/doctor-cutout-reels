@@ -1,7 +1,7 @@
 {
   "status": "awaiting_user_review",
-  "revision": "3ca61ae56ad882e2",
-  "estimated_duration": 56.687441860465114,
+  "revision": "4aeb70abf51339ac",
+  "estimated_duration": 47.73096468561585,
   "target_duration": [
     30,
     60
@@ -10,6 +10,11 @@
   "layout": "full_scene",
   "width": 1080,
   "height": 1920,
+  "pacing": {
+    "speech_speed": 1.08,
+    "lead_in": 0.03,
+    "trim_silence": true
+  },
   "sources": [],
   "timeline": [
     {
@@ -24,7 +29,7 @@
       "shot": "alo",
       "setting": "classroom",
       "motion": "nod",
-      "hold": 0.4,
+      "hold": 0.12,
       "action": "阿洛舉手，用真正請教的疑問句發問；問完等待醫師回答。",
       "reaction": "醫師下一幕先回應阿洛的問題，再帶到黑板。",
       "claims": [],
@@ -35,9 +40,9 @@
       },
       "index": 0,
       "start": 0,
-      "end": 5.928837209302326,
-      "voice_start": 0.18,
-      "voice_end": 5.528837209302326,
+      "end": 5.102627045650301,
+      "voice_start": 0.03,
+      "voice_end": 4.982627045650301,
       "draft_pose": true
     },
     {
@@ -52,7 +57,7 @@
       "shot": "doctor",
       "setting": "classroom",
       "motion": "still",
-      "hold": 0.4,
+      "hold": 0.1,
       "action": "師生同尺度分站黑板兩側，醫師用指示棒介紹條列與箭頭。",
       "reaction": "阿洛看完黑板再接話，不讓教具成為純背景。",
       "claims": [],
@@ -68,10 +73,10 @@
       "gesture": "point",
       "intent": "answer",
       "index": 1,
-      "start": 5.928837209302326,
-      "end": 12.322790697674419,
-      "voice_start": 6.108837209302326,
-      "voice_end": 11.922790697674419,
+      "start": 5.102627045650301,
+      "end": 10.615917312661498,
+      "voice_start": 5.132627045650302,
+      "voice_end": 10.515917312661498,
       "draft_pose": true
     },
     {
@@ -86,7 +91,7 @@
       "shot": "mei",
       "setting": "schoolyard",
       "motion": "nod",
-      "hold": 0.4,
+      "hold": 0.12,
       "action": "校園中美芳提出教具建議，醫師聽完帶回教室示範。",
       "reaction": "不把每一集固定成有人說錯、醫師糾正。",
       "claims": [],
@@ -96,10 +101,10 @@
         "mode": "dialogue"
       },
       "index": 2,
-      "start": 12.322790697674419,
-      "end": 18.949302325581392,
-      "voice_start": 12.502790697674419,
-      "voice_end": 18.549302325581394,
+      "start": 10.615917312661498,
+      "end": 16.364539190353145,
+      "voice_start": 10.645917312661497,
+      "voice_end": 16.244539190353144,
       "draft_pose": true
     },
     {
@@ -114,7 +119,7 @@
       "shot": "doctor",
       "setting": "classroom",
       "motion": "shake",
-      "hold": 0.4,
+      "hold": 0.1,
       "action": "醫師與阿洛同尺度站在模型兩側；桌面有骨頭教具與支架。",
       "reaction": "阿洛觀察模型；本幕只展示教具演法，不提供疾病或精確解剖說法。",
       "claims": [],
@@ -128,10 +133,10 @@
       "gesture": "present",
       "intent": "answer",
       "index": 3,
-      "start": 18.949302325581392,
-      "end": 24.878139534883715,
-      "voice_start": 19.129302325581392,
-      "voice_end": 24.478139534883717,
+      "start": 16.364539190353145,
+      "end": 21.447166236003447,
+      "voice_start": 16.394539190353147,
+      "voice_end": 21.347166236003446,
       "draft_pose": true
     },
     {
@@ -146,7 +151,7 @@
       "shot": "alo",
       "setting": "street",
       "motion": "nod",
-      "hold": 0.5,
+      "hold": 0.12,
       "action": "街道中阿洛追問，醫師保持同尺度冷面聽完。",
       "reaction": "從教具示範轉成生活情境，用接話推進笑點。",
       "claims": [],
@@ -156,10 +161,10 @@
         "mode": "dialogue"
       },
       "index": 4,
-      "start": 24.878139534883715,
-      "end": 30.20930232558139,
-      "voice_start": 25.058139534883715,
-      "voice_end": 29.70930232558139,
+      "start": 21.447166236003447,
+      "end": 25.903798449612406,
+      "voice_start": 21.47716623600345,
+      "voice_end": 25.783798449612405,
       "draft_pose": true
     },
     {
@@ -174,7 +179,7 @@
       "shot": "mei",
       "setting": "street",
       "motion": "nod",
-      "hold": 0.4,
+      "hold": 0.1,
       "action": "街道上用並列教學卡比較兩種敘事用途，兩位角色保持同尺度。",
       "reaction": "美芳代觀眾回應，不把所有內容塞成醫師獨白。",
       "claims": [],
@@ -189,10 +194,10 @@
       "gesture": "present",
       "intent": "answer",
       "index": 5,
-      "start": 30.20930232558139,
-      "end": 36.13813953488371,
-      "voice_start": 30.38930232558139,
-      "voice_end": 35.738139534883715,
+      "start": 25.903798449612406,
+      "end": 30.986425495262708,
+      "voice_start": 25.933798449612407,
+      "voice_end": 30.886425495262706,
       "draft_pose": true
     },
     {
@@ -207,7 +212,7 @@
       "shot": "wide",
       "setting": "classroom",
       "motion": "still",
-      "hold": 0.6,
+      "hold": 0.1,
       "action": "師生站在黑板兩側，列出兩個選項，先交給使用者審閱。",
       "reaction": "阿洛準備接話；修改確認之前不生成聲音或影片。",
       "claims": [],
@@ -222,10 +227,10 @@
       "gesture": "point",
       "intent": "answer",
       "index": 6,
-      "start": 36.13813953488371,
-      "end": 42.964651162790695,
-      "voice_start": 36.31813953488371,
-      "voice_end": 42.36465116279069,
+      "start": 30.986425495262708,
+      "end": 36.71504737295435,
+      "voice_start": 31.01642549526271,
+      "voice_end": 36.61504737295435,
       "draft_pose": true
     },
     {
@@ -240,7 +245,7 @@
       "shot": "punch",
       "setting": "classroom",
       "motion": "still",
-      "hold": 1.0,
+      "hold": 0.12,
       "action": "阿洛自然舉手追問，以「嗎？」結尾，不在問題後接斷言。",
       "reaction": "醫師接著回答，並用結論與個別評估提醒收尾。",
       "claims": [],
@@ -250,10 +255,10 @@
         "mode": "dialogue"
       },
       "index": 7,
-      "start": 42.964651162790695,
-      "end": 49.49348837209302,
-      "voice_start": 43.144651162790694,
-      "voice_end": 48.49348837209302,
+      "start": 36.71504737295435,
+      "end": 41.81767441860465,
+      "voice_start": 36.74504737295435,
+      "voice_end": 41.697674418604656,
       "draft_pose": true
     },
     {
@@ -270,7 +275,7 @@
       "setting": "classroom",
       "motion": "still",
       "gesture": "present",
-      "hold": 1.2,
+      "hold": 0.5,
       "action": "醫師先回答學生，再以專業評估提醒收束；提醒會完整配音與上字幕。",
       "reaction": "阿洛聽完，結尾保留停頓，不再接笑話蓋過結論。",
       "claims": [],
@@ -278,10 +283,10 @@
         "mode": "dialogue"
       },
       "index": 8,
-      "start": 49.49348837209302,
-      "end": 56.687441860465114,
-      "voice_start": 49.67348837209302,
-      "voice_end": 55.48744186046511,
+      "start": 41.81767441860465,
+      "end": 47.73096468561585,
+      "voice_start": 41.847674418604655,
+      "voice_end": 47.23096468561585,
       "draft_pose": true
     }
   ]

@@ -13,7 +13,7 @@ import sys
 from PIL import Image, ImageDraw
 import imageio_ffmpeg
 
-from audio import assemble
+from audio import assemble, pacing_settings, default_hold
 from visuals import Stage, chunks, find_font, fit, TEACHING_LABELS, GESTURE_LABELS, resolved_gesture
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -53,6 +53,7 @@ def validate(data):
     if kind not in ("medical", "template"):
         raise ValueError("content_type must be medical or template")
     data["content_type"] = kind
+    data["pacing"]=pacing_settings(data)
     for field, default, limit in [("brand","醫師剪紙劇場",14),
                                   ("footer","一般衛教資訊 · 個別狀況請諮詢醫師",28)]:
         data.setdefault(field, default)
@@ -132,9 +133,9 @@ def validate(data):
                 raise ValueError(f"Scene {i+1}: comparison requires exactly two points")
             if lesson["mode"]=="bone_model" and len(points)!=1:
                 raise ValueError(f"Scene {i+1}: bone_model uses one short point above the model")
-        scene.setdefault("hold",.4)
-        if isinstance(scene["hold"],bool) or not isinstance(scene["hold"],(int,float)) or not .1 <= scene["hold"] <= 2:
-            raise ValueError(f"Scene {i+1}: hold must be 0.1–2 seconds")
+        scene.setdefault("hold",default_hold(scene))
+        if isinstance(scene["hold"],bool) or not isinstance(scene["hold"],(int,float)) or not .04 <= scene["hold"] <= 2:
+            raise ValueError(f"Scene {i+1}: hold must be 0.04–2 seconds; keep ordinary replies near 0.1 seconds")
         claims=scene.setdefault("claims",[])
         if not isinstance(claims,list) or any(not isinstance(c,str) or c not in ids for c in claims):
             raise ValueError(f"Scene {i+1}: claims reference unknown source IDs")
@@ -175,11 +176,14 @@ def draft(episode,out,font_path):
           "手機滿版場景 9:16 · 1080×1920；不設上下標題區，對話字幕直接疊於場景。秒數為讀劇估計，核准後依實際配音調整為 30–60 秒。\n",
           "分鏡顯示說話姿勢代表幀，尚未合成聲音或影片。總覽是多張直式分鏡拼在一起，不是影片畫面比例。\n"]
     cards=[]
+    pacing=pacing_settings(episode)
+    rows.append(f"配音速度：基準的 {pacing['speech_speed']:.2f} 倍；一般接話採短停頓，保留問句與結尾的語意停頓。\n")
     for i,scene in enumerate(episode["scenes"]):
-        length=max(2.0,len(scene["text"])/4.3)
-        end=cursor+.18+length+scene["hold"]
-        item=dict(scene,index=i,start=cursor,end=end,voice_start=cursor+.18,
-                  voice_end=cursor+.18+length,envelope=[0.0]*math.ceil(length*24),draft_pose=True)
+        length=max(1.5,len(scene["text"])/(4.3*pacing["speech_speed"]))
+        lead=pacing["lead_in"]
+        end=cursor+lead+length+scene["hold"]
+        item=dict(scene,index=i,start=cursor,end=end,voice_start=cursor+lead,
+                  voice_end=cursor+lead+length,envelope=[0.0]*math.ceil(length*24),draft_pose=True)
         frame=stage.frame(item,(cursor+end)/2,24)
         image_name=f"frames/{i+1:02}.jpg"
         frame.save(out/image_name,quality=91)
@@ -196,6 +200,7 @@ def draft(episode,out,font_path):
         rows += [f"## {i+1:02} · {setting} · {beat_label} · 約 {end-cursor:.1f} 秒\n",
                  f"角色：{cast}｜鏡頭：{shot_label}\n",
                  f"對話功能：{INTENT_LABELS[scene['intent']]}\n",
+                 f"句後停頓：約 {scene['hold']:.2f} 秒\n",
                  f"**{name}：** {scene['text']}\n",f"動作：{scene['action']}\n",
                  f"接話／反應：{scene['reaction']}\n",f"字卡：{scene['headline']}\n",
                  f"演法：{TEACHING_LABELS[scene['teaching']['mode']]}\n",
@@ -219,7 +224,7 @@ def draft(episode,out,font_path):
     (out/"script.md").write_text("\n".join(rows),encoding="utf-8")
     manifest={"status":"awaiting_user_review","revision":rev,"estimated_duration":cursor,
               "target_duration":[30,60],"aspect_ratio":ASPECT_RATIO,"layout":"full_scene","width":1080,"height":1920,
-              "sources":episode["sources"],"timeline":timeline}
+              "pacing":pacing,"sources":episode["sources"],"timeline":timeline}
     (out/"draft.json").write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding="utf-8")
     (out/"episode.json").write_text(json.dumps(episode,ensure_ascii=False,indent=2),encoding="utf-8")
     page=f'''<!doctype html><html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(episode['title'])}・分鏡審稿</title><style>body{{background:#fff9ed;color:#202332;font:17px system-ui;max-width:1100px;margin:40px auto;padding:0 20px}}article{{display:grid;grid-template-columns:230px 1fr;gap:28px;border-top:3px solid #202332;padding:25px 0}}img{{width:100%;aspect-ratio:9/16;object-fit:contain}}h1{{font-size:30px}}small{{color:#666}}p{{line-height:1.7}}.status{{padding:18px;background:#f8c854}}a{{color:#315d57}}@media(max-width:600px){{article{{grid-template-columns:1fr}}img{{max-width:270px}}}}</style><h1>{html.escape(episode['title'])}</h1><p class="status">待審稿 · 手機滿版場景 9:16 · 版本 {rev} · 約 {cursor:.1f} 秒（估）<br>尚未生成配音、配樂或影片。請先修改或確認腳本與分鏡。</p><p><a href="script.md">完整腳本</a> · <a href="storyboard.jpg">分鏡總覽</a> · <a href="episode.json">劇本資料</a></p>{''.join(cards)}</html>'''
@@ -305,6 +310,7 @@ def render(episode, source_dir, out, backend, width, fps, font_path):
     manifest={"title":episode["title"],"topic":episode["topic"],"content_type":episode["content_type"],
               "duration":duration,"aspect_ratio":ASPECT_RATIO,"layout":"full_scene","sample_aspect_ratio":"1:1",
               "width":width,"height":height,"fps":fps,"speech_backend":backend,
+              "pacing":pacing_settings(episode),
               "voices":episode["voices"],"sources":episode["sources"],
               "timing":"measured PCM speech; proportional subtitle chunks; amplitude mouth animation",
               "timeline":[{k:v for k,v in s.items() if k!="envelope"} for s in timeline],
